@@ -62,7 +62,7 @@ const source = createStaticSource({ pages: [homePage, aboutPage] }); // JSON in 
 const source = createApiSource({ baseUrl: "/api/content" });          // your backend
 ```
 
-Both validate content and return the same normalised, immutable `PageDocument`. CMS response shapes (Payload, Strapi, Contentful) belong in the adapter:
+Both validate content and return the same normalised, immutable `PageDocument`. Complete static, dynamic and hybrid examples (backend included): [Static and dynamic content](https://github.com/YarlisAISolutions/contentcore#static-and-dynamic-content). CMS response shapes (Payload, Strapi, Contentful) belong in the adapter:
 
 ```ts
 createApiSource({

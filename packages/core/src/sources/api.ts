@@ -1,4 +1,5 @@
 import { type CacheOptions, type CachedContentSource, createCachedSource } from "../cache";
+import { linkedSignal } from "../compat";
 import type { ContentSource, GetPageOptions, PageDocument } from "../contracts";
 import { ContentSourceError, isAbortError, throwIfAborted } from "../errors";
 import type { PageMigrations } from "../migrations";
@@ -119,15 +120,33 @@ export function createUncachedApiSource(options: ApiSourceOptions): ContentSourc
     const known = useEtag ? validators.get(url) : undefined;
     if (known) headers.set("if-none-match", known.etag);
 
-    const timeout = timeoutMs > 0 ? AbortSignal.timeout(timeoutMs) : undefined;
-    const combined = signal && timeout ? AbortSignal.any([signal, timeout]) : (signal ?? timeout);
+    const link = linkedSignal(signal, timeoutMs);
+    try {
+      return await send(normalized, url, headers, known, signal, link);
+    } finally {
+      link.dispose();
+    }
+  }
+
+  async function send(
+    normalized: string,
+    url: string,
+    headers: Headers,
+    known: { etag: string; page: PageDocument | null } | undefined,
+    signal: AbortSignal | undefined,
+    link: ReturnType<typeof linkedSignal>,
+  ) {
+    const init: RequestInit = { method: "GET", headers, signal: link.signal };
+    // Some runtimes (Cloudflare Workers) reject unsupported keys even when undefined.
+    if (options.credentials !== undefined) init.credentials = options.credentials;
+    const doFetch = options.fetch ?? globalThis.fetch;
 
     let response: Response;
     try {
-      response = await doFetch(url, { method: "GET", headers, credentials: options.credentials, signal: combined });
+      response = await doFetch(url, init);
     } catch (cause) {
       if (signal?.aborted) throw cause;
-      if (timeout?.aborted) throw new RetryableError(`request for "${normalized}" timed out after ${timeoutMs}ms`, { url, cause });
+      if (link.timedOut()) throw new RetryableError(`request for "${normalized}" timed out after ${timeoutMs}ms`, { url, cause });
       if (isAbortError(cause)) throw cause;
       throw new RetryableError(`request for "${normalized}" failed`, { url, cause });
     }
@@ -145,7 +164,7 @@ export function createUncachedApiSource(options: ApiSourceOptions): ContentSourc
       body = await response.json();
     } catch (cause) {
       if (signal?.aborted) throw cause;
-      if (timeout?.aborted) throw new RetryableError(`response for "${normalized}" timed out after ${timeoutMs}ms`, { url, cause });
+      if (link.timedOut()) throw new RetryableError(`response for "${normalized}" timed out after ${timeoutMs}ms`, { url, cause });
       throw new ContentSourceError(`response for "${normalized}" is not valid JSON`, { url, status: response.status, cause });
     }
 

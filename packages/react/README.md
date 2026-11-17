@@ -6,7 +6,7 @@ Render CMS-driven pages in React. Register schema-validated blocks, load pages f
 npm i @contentcore/react zod
 ```
 
-React 18.2+ is a peer dependency. Zod is optional: any [Standard Schema](https://standardschema.dev) library works (Zod 3.24+/4, Valibot, ArkType).
+Works on Linux, macOS and Windows; Node 20+, Bun, Deno and edge runtimes; Chromium, Firefox and WebKit; React 18 and 19 ([platform support](https://github.com/YarlisAISolutions/contentcore/blob/main/docs/platform-support.md)). React 18.2+ is a peer dependency. Zod is optional: any [Standard Schema](https://standardschema.dev) library works (Zod 3.24+/4, Valibot, ArkType).
 
 ## Quick start
 
@@ -193,6 +193,14 @@ export default async function Page({ params }) {
 - **Hooks:** `usePage`, `usePrefetch`, `useCapabilities`, `usePageDocument`.
 - **Blocks:** `defineBlock`, `htmlBlock`, `createHtmlBlock`, `resolveBlocks`.
 - **Re-exports:** everything from `@contentcore/core`.
+
+## Documentation
+
+- [Getting started](https://github.com/YarlisAISolutions/contentcore/blob/main/docs/getting-started.md)
+- [Embedding in your app](https://github.com/YarlisAISolutions/contentcore/blob/main/docs/embedding.md): SPA, Next.js, React Router/Remix, Node/Bun/Deno, edge, Astro, React Native, and page patterns
+- [Content model](https://github.com/YarlisAISolutions/contentcore/blob/main/docs/content-model.md) · [Blocks](https://github.com/YarlisAISolutions/contentcore/blob/main/docs/blocks.md) · [Sources and caching](https://github.com/YarlisAISolutions/contentcore/blob/main/docs/sources-and-caching.md)
+- [Best practices](https://github.com/YarlisAISolutions/contentcore/blob/main/docs/best-practices.md) · [Platform support](https://github.com/YarlisAISolutions/contentcore/blob/main/docs/platform-support.md) · [API reference](https://github.com/YarlisAISolutions/contentcore/blob/main/docs/api-reference.md)
+- [Examples](https://github.com/YarlisAISolutions/contentcore/blob/main/examples/README.md): Vite feature tour, Next.js App Router, Node/Bun/Deno server, edge worker
 
 ## Licence
 

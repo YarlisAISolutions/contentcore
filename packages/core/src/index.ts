@@ -48,6 +48,7 @@ export {
   createHtmlContentSchema,
   htmlContentSchema,
   validateHtmlNodes,
+  type HtmlBlockContent,
   type HtmlContent,
   type HtmlElementNode,
   type HtmlLimits,

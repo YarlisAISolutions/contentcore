@@ -13,7 +13,7 @@ export type ResolvedBlock =
 export function resolveBlocks(page: PageDocument, registry: BlockRegistry): ResolvedBlock[] | Promise<ResolvedBlock[]> {
   let pending = false;
   const results = page.blocks.map((block): ResolvedBlock | Promise<ResolvedBlock> => {
-    const definition = Object.hasOwn(registry, block.type) ? registry[block.type] : undefined;
+    const definition = Object.prototype.hasOwnProperty.call(registry, block.type) ? registry[block.type] : undefined;
     if (!definition) return { kind: "unknown", block };
     const finish = (r: Awaited<ReturnType<typeof validateBlockContent>>): ResolvedBlock =>
       r.ok ? { kind: "ok", block, definition, content: r.value } : { kind: "invalid", block, issues: r.issues };

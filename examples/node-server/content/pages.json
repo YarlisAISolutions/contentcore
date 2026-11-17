@@ -1,0 +1,24 @@
+[
+  {
+    "id": "home",
+    "slug": "/",
+    "schemaVersion": 1,
+    "title": "Home",
+    "meta": { "description": "Server-rendered with ContentCore" },
+    "blocks": [
+      { "id": "welcome", "type": "hero", "content": { "heading": "Welcome", "description": "Rendered on the server" } },
+      {
+        "id": "body",
+        "type": "html",
+        "content": { "nodes": [{ "tag": "p", "children": ["Rich ", { "tag": "strong", "children": ["HTML"] }, " content."] }] }
+      }
+    ]
+  },
+  {
+    "id": "about",
+    "slug": "/about",
+    "schemaVersion": 1,
+    "title": "About",
+    "blocks": [{ "id": "intro", "type": "hero", "content": { "heading": "About us" } }]
+  }
+]

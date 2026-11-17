@@ -6,7 +6,7 @@ export default defineConfig({
   dts: true,
   sourcemap: true,
   clean: true,
-  target: "es2022",
+  target: "es2020",
   external: ["react", "@contentcore/core"],
   // Everything here uses hooks or context, so mark the entry as a client module for
   // React Server Components (Next.js). Server code imports @contentcore/core directly.

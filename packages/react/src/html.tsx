@@ -118,7 +118,8 @@ function toProps(tag: string, attrs: Record<string, unknown> | undefined, custom
       continue;
     }
     let name: string;
-    if (custom) name = lower === "class" ? "className" : rawName;
+    // Custom elements take attributes verbatim; `class` (not className) works on React 18 and 19.
+    if (custom) name = lower === "class" ? "class" : rawName;
     else if (lower.startsWith("aria-") || lower.startsWith("data-")) name = lower;
     else name = ATTR_MAP[lower] ?? (rawName.includes("-") ? camel(lower) : rawName);
     // Content sets a field's initial state; the user must still be able to edit it.

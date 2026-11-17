@@ -72,8 +72,9 @@ describe("HtmlContent", () => {
         { tag: "input", attrs: { id: "i", tabindex: 2, readonly: true, maxlength: 5, disabled: false, value: null } },
         { tag: "td", attrs: { colspan: 2 } },
       ]),
-    ).toBe(
-      '<label class="c" for="i" data-x="1" aria-label="L" style="color:red;--gap:2px;background-color:blue">x</label><input id="i" tabindex="2" readOnly="" maxLength="5"/><td colSpan="2"></td>',
+    ).toMatch(
+      // React 18 and 19 differ only in the casing of SSR boolean attributes (readonly / readOnly).
+      /^<label class="c" for="i" data-x="1" aria-label="L" style="color:red;--gap:2px;background-color:blue">x<\/label><input id="i" tabindex="2" readonly="" maxLength="5"\/><td colSpan="2"><\/td>$/i,
     );
   });
 

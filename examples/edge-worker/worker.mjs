@@ -18,12 +18,14 @@ const blocks = { hero, html: htmlBlock };
 // One source per isolate: its in-memory cache survives between requests on a warm isolate.
 // Public content only (it is shared by every visitor of this isolate).
 let source;
-const getSource = (env) =>
-  (source ??= createApiSource({
+const getSource = (env) => {
+  if (!env?.CONTENT_API) throw new Error("Set the CONTENT_API variable to your content API base URL");
+  return (source ??= createApiSource({
     baseUrl: env.CONTENT_API,
     timeoutMs: 3000, // edge budgets are tight: fail fast and fall back to stale content
     retry: { retries: 1 },
   }));
+};
 
 export default {
   async fetch(request, env) {

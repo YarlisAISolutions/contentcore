@@ -1,11 +1,19 @@
-# ContentCore
+<p align="center">
+  <img src="brand/logo.svg" alt="ContentCore logo" width="112" height="112">
+</p>
 
-[![CI](https://github.com/YarlisAISolutions/contentcore/actions/workflows/ci.yml/badge.svg)](https://github.com/YarlisAISolutions/contentcore/actions/workflows/ci.yml)
-[![npm @contentcore/react](https://img.shields.io/npm/v/@contentcore/react?label=%40contentcore%2Freact)](https://www.npmjs.com/package/@contentcore/react)
-[![npm @contentcore/core](https://img.shields.io/npm/v/@contentcore/core?label=%40contentcore%2Fcore)](https://www.npmjs.com/package/@contentcore/core)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+<h1 align="center">ContentCore</h1>
 
-**Schema-driven content for React apps.** Pages made of typed blocks, loaded from any source, cached and highly available by default, with every HTML element rendered safely. Built to last: the stored format is versioned and migrates forward.
+<p align="center"><b>Schema-driven content for React.</b> Typed blocks · cached, highly available sources · every HTML element rendered safely · runs everywhere.</p>
+
+<p align="center">
+  <a href="https://github.com/YarlisAISolutions/contentcore/actions/workflows/ci.yml"><img src="https://github.com/YarlisAISolutions/contentcore/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://www.npmjs.com/package/@contentcore/react"><img src="https://img.shields.io/npm/v/@contentcore/react?label=%40contentcore%2Freact" alt="npm @contentcore/react"></a>
+  <a href="https://www.npmjs.com/package/@contentcore/core"><img src="https://img.shields.io/npm/v/@contentcore/core?label=%40contentcore%2Fcore" alt="npm @contentcore/core"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
+</p>
+
+Pages made of typed blocks, loaded from any source and rendered fast and safely. Built to last: the stored format is versioned and migrates forward.
 
 ```tsx
 import { CmsProvider, CmsPage, createApiSource, defineBlock, htmlBlock } from "@contentcore/react";
@@ -105,4 +113,5 @@ bun run bench
 
 - [Changelog](CHANGELOG.md)
 - [Contributor notes](CLAUDE.md)
+- [Brand guide and logo files](brand/BRAND.md)
 - [Licence (MIT)](LICENSE)

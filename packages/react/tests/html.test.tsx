@@ -73,8 +73,8 @@ describe("HtmlContent", () => {
         { tag: "td", attrs: { colspan: 2 } },
       ]),
     ).toMatch(
-      // React 18 and 19 differ only in the casing of SSR boolean attributes (readonly / readOnly).
-      /^<label class="c" for="i" data-x="1" aria-label="L" style="color:red;--gap:2px;background-color:blue">x<\/label><input id="i" tabindex="2" readonly="" maxLength="5"\/><td colSpan="2"><\/td>$/i,
+      // React 18 and 19 differ only in the casing of the SSR readonly attribute.
+      /^<label class="c" for="i" data-x="1" aria-label="L" style="color:red;--gap:2px;background-color:blue">x<\/label><input id="i" tabindex="2" read(?:o|O)nly="" maxLength="5"\/><td colSpan="2"><\/td>$/,
     );
   });
 

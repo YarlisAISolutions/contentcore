@@ -4,9 +4,21 @@
 import { normalizeSlug } from "@contentcore/core";
 import { revalidatePath } from "next/cache";
 
+const enc = new TextEncoder();
+
+/** Constant-time comparison of SHA-256 digests, so response timing reveals nothing about the secret. */
+async function sameSecret(given: string, expected: string) {
+  const [a, b] = await Promise.all([given, expected].map((v) => crypto.subtle.digest("SHA-256", enc.encode(v))));
+  const x = new Uint8Array(a as ArrayBuffer);
+  const y = new Uint8Array(b as ArrayBuffer);
+  let diff = 0;
+  for (let i = 0; i < x.length; i++) diff |= (x[i] as number) ^ (y[i] as number);
+  return diff === 0;
+}
+
 export async function POST(request: Request) {
   const secret = process.env.REVALIDATE_SECRET;
-  if (!secret || request.headers.get("x-revalidate-secret") !== secret) {
+  if (!secret || !(await sameSecret(request.headers.get("x-revalidate-secret") ?? "", secret))) {
     return Response.json({ ok: false }, { status: 401 });
   }
   const { slug } = (await request.json().catch(() => ({}))) as { slug?: unknown };

@@ -23,7 +23,7 @@ Every row marked **CI** runs on every pull request. "Pattern" rows are documente
 | Firefox | **CI** | Same |
 | WebKit (Safari, all iOS browsers) | **CI** | Same |
 
-**Baseline:** browsers with ES2020 and `fetch`/`AbortController`: Chrome/Edge 80+, Firefox 75+, Safari 13.1+. Newer APIs (`AbortSignal.any`, `AbortSignal.timeout`, `structuredClone`, `DOMException` and `Object.hasOwn`) are feature-detected with fallbacks. Only current engine versions run in CI, so older versions in the baseline are supported by design but not tested.
+**Baseline:** Safari 15+, Chrome/Edge 90+, Firefox 90+ (ES2020, `fetch`, `AbortController` with `signal.reason`, `Error` `cause`). Newer APIs (`AbortSignal.any`, `AbortSignal.timeout`, `structuredClone`, `DOMException` and `Object.hasOwn`) are feature-detected with fallbacks. Only current engine versions run in CI, so older versions in the baseline are supported by design but not tested.
 
 ## React and frameworks
 

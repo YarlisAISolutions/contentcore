@@ -1,7 +1,7 @@
 /**
  * Small fallbacks so the core runs on every JavaScript platform: Node 20+, Bun, Deno,
  * browsers back to Safari 15, edge runtimes (Cloudflare Workers, Vercel Edge) and
- * React Native's Hermes, which lack some newer globals.
+ * React Native's Hermes, which lack some newer globals. Browser baseline: Safari 15+, Chrome/Edge 90+, Firefox 90+.
  */
 
 /** An abort error that works without `DOMException` (React Native, some edge runtimes). */
@@ -17,8 +17,6 @@ export function cloneData<T>(value: T): T {
   if (typeof structuredClone === "function") return structuredClone(value);
   return value === undefined ? value : (JSON.parse(JSON.stringify(value)) as T);
 }
-
-export const hasOwn = (object: object, key: PropertyKey): boolean => Object.prototype.hasOwnProperty.call(object, key);
 
 /**
  * A signal that aborts when `parent` aborts or after `timeoutMs`, without

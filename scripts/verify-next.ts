@@ -18,7 +18,7 @@ try {
     const p = spawn(process.execPath, [require.resolve("next/dist/bin/next"), "start", "-p", "0", "-H", "127.0.0.1"], { stdio: ["ignore", "pipe", "inherit"] });
     p.stdout.on("data", (d) => { const m = String(d).match(/(http:\\/\\/127\\.0\\.0\\.1:\\d+)/); if (m) console.log("listening on " + m[1]); });
     process.on("SIGTERM", () => { p.kill(); process.exit(0); });
-  `], app, { NEXT_TELEMETRY_DISABLED: "1" });
+  `], app, { NEXT_TELEMETRY_DISABLED: "1", REVALIDATE_SECRET: "verify-only-secret" });
   try {
     const home = await (await fetch(`${server.url}/`)).text();
     assert(home.includes("Welcome") && home.includes("<title>Home</title>"), "home page or its metadata missing");
@@ -39,6 +39,10 @@ try {
     assert(again.status === 304, "content API ETag/304");
     const webhook = await fetch(`${server.url}/api/revalidate`, { method: "POST", body: JSON.stringify({ slug: "/" }) });
     assert(webhook.status === 401, "revalidate webhook must reject requests without the secret");
+    const wrong = await fetch(`${server.url}/api/revalidate`, { method: "POST", headers: { "x-revalidate-secret": "nope" }, body: JSON.stringify({ slug: "/" }) });
+    assert(wrong.status === 401, "revalidate webhook must reject a wrong secret");
+    const ok = await fetch(`${server.url}/api/revalidate`, { method: "POST", headers: { "x-revalidate-secret": "verify-only-secret" }, body: JSON.stringify({ slug: "/" }) });
+    assert(ok.status === 200, `revalidate webhook with the right secret returned ${ok.status}`);
     console.log("✓ next start: prerendered pages, metadata, embedded section, 404, content API (ETag), webhook auth");
   } finally {
     server.stop();

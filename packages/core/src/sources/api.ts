@@ -1,5 +1,5 @@
 import { type CacheOptions, type CachedContentSource, createCachedSource } from "../cache";
-import { linkedSignal } from "../compat";
+import { abortError, linkedSignal } from "../compat";
 import type { ContentSource, GetPageOptions, PageDocument } from "../contracts";
 import { ContentSourceError, isAbortError, throwIfAborted } from "../errors";
 import type { PageMigrations } from "../migrations";
@@ -62,14 +62,14 @@ const MAX_VALIDATORS = 1000;
 
 function sleep(ms: number, signal: AbortSignal | undefined): Promise<void> {
   return new Promise((resolve, reject) => {
-    if (signal?.aborted) return reject(signal.reason);
+    if (signal?.aborted) return reject(signal.reason ?? abortError());
     const timer = setTimeout(() => {
       signal?.removeEventListener("abort", onAbort);
       resolve();
     }, ms);
     const onAbort = () => {
       clearTimeout(timer);
-      reject(signal?.reason);
+      reject(signal?.reason ?? abortError());
     };
     signal?.addEventListener("abort", onAbort, { once: true });
   });

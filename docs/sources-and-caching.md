@@ -48,7 +48,7 @@ const source = createApiSource({
 | `peek(slug, { locale })` | Synchronous read. `CmsPage` uses it to render cached pages with no loading state |
 | `prefetch(slug)` | Warm the cache ahead of navigation. Never throws |
 | `prime(page)` | Hand over a page you already have, e.g. one rendered on the server |
-| `invalidate(slug?, { locale }?)` | Drop one page, all locales of a slug, or everything |
+| `invalidate(slug?, { locale }?)` | Drop one page, all locales of a slug, or everything. Mounted pages reload; what is on screen stays until the new copy arrives |
 | `subscribe(listener)` | Called when a page's content changes |
 | `clear()`, `size` | Housekeeping |
 

@@ -99,7 +99,8 @@ describe("abort versus timeout in the API source", () => {
       retry: { retries: 3, baseDelayMs: 200, maxDelayMs: 200 },
       fetch: (async () => {
         calls++;
-        return new Response("busy", { status: 503 });
+        // Retry-After pins the backoff to maxDelayMs (200 ms), so the abort always lands inside it.
+        return new Response("busy", { status: 503, headers: { "retry-after": "1" } });
       }) as unknown as typeof fetch,
     });
     // A signal whose reason is undefined, as on runtimes without AbortSignal.reason.

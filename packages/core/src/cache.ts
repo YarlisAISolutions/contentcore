@@ -26,7 +26,10 @@ export interface CachedContentSource extends ContentSource {
   peek(slug: string, options?: Pick<GetPageOptions, "locale">): PageDocument | null | undefined;
   prefetch(slug: string, options?: Pick<GetPageOptions, "locale">): Promise<void>;
   subscribe(listener: (slug: string, locale: string | undefined) => void): () => void;
-  /** Drop one page (all locales when `locale` is omitted), or everything when called with no slug. */
+  /**
+   * Drop one page (all locales when `locale` is omitted), or everything when called with no slug.
+   * Subscribers (mounted pages) are notified and reload; what is on screen stays until the new copy arrives.
+   */
   invalidate(slug?: string, options?: Pick<GetPageOptions, "locale">): void;
   /** Store a page directly, e.g. one rendered on the server and handed to the client. */
   prime(page: PageDocument): void;
@@ -190,10 +193,19 @@ export function createCachedSource(source: ContentSource, options: CacheOptions 
     },
 
     invalidate(slug, opts) {
-      if (slug === undefined) return entries.clear();
-      const normalized = normalizeSlug(slug);
-      if (opts && "locale" in opts) return void entries.delete(keyOf(normalized, opts.locale));
-      for (const [key, entry] of entries) if (entry.slug === normalized) entries.delete(key);
+      // Mounted pages are told, so they reload (e.g. a "Refresh content" button or a publish webhook).
+      const dropped: Entry[] = [];
+      const normalized = slug === undefined ? undefined : normalizeSlug(slug);
+      for (const [key, entry] of entries) {
+        const matches =
+          normalized === undefined ||
+          (entry.slug === normalized && (!opts || !("locale" in opts) || entry.locale === opts.locale));
+        if (matches) {
+          entries.delete(key);
+          dropped.push(entry);
+        }
+      }
+      for (const entry of dropped) for (const listener of listeners) listener(entry.slug, entry.locale);
     },
 
     prime(page) {

@@ -155,6 +155,20 @@ describe("createCachedSource", () => {
     await cache.prefetch("/"); // never throws
   });
 
+  test("invalidate notifies subscribers so mounted pages reload", async () => {
+    const { source } = upstream([structuredClone(homePage) as PageDocument, structuredClone(aboutPage) as PageDocument]);
+    const cache = createCachedSource(source);
+    await cache.getPage("/");
+    await cache.getPage("/about");
+    const seen: string[] = [];
+    cache.subscribe((slug) => seen.push(slug));
+    cache.invalidate("/about");
+    expect(seen).toEqual(["/about"]);
+    cache.invalidate();
+    expect(seen).toEqual(["/about", "/"]);
+    expect(cache.size).toBe(0);
+  });
+
   test("a caller's abort does not cancel the shared request", async () => {
     const { state, source } = upstream();
     state.delayMs = 10;

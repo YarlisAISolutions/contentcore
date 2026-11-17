@@ -52,6 +52,218 @@ export default function App() {
 npm i @contentcore/react zod
 ```
 
+## Static and dynamic content
+
+ContentCore renders the same pages whether they are **static** (shipped with your app) or **dynamic** (loaded at runtime from an API or CMS). Only the source changes; blocks and components stay the same. Each example below is copy-paste ready and is covered by [`packages/react/tests/readme.test.tsx`](packages/react/tests/readme.test.tsx).
+
+All the examples share these blocks:
+
+```tsx
+// blocks.tsx
+import { defineBlock, htmlBlock } from "@contentcore/react";
+import { z } from "zod";
+
+export const hero = defineBlock({
+  schema: z.object({ heading: z.string(), description: z.string().optional() }),
+  component: ({ content }) => (
+    <section>
+      <h1>{content.heading}</h1>
+      {content.description && <p>{content.description}</p>}
+    </section>
+  ),
+});
+
+// Keys are the block `type`s stored in content. Define the registry once, at module scope.
+export const blocks = { hero, html: htmlBlock };
+```
+
+### 1. Static content: JSON in your repo
+
+The pages ship with the app. There is no network call, rendering is instant, and the site works offline. To change content, you deploy.
+
+```json
+// content/pages.json
+[
+  {
+    "id": "home",
+    "slug": "/",
+    "schemaVersion": 1,
+    "title": "Home",
+    "blocks": [
+      { "id": "welcome", "type": "hero", "content": { "heading": "Welcome", "description": "Explore our products" } },
+      { "id": "intro", "type": "html", "content": { "nodes": [
+        { "tag": "p", "children": ["Built with ", { "tag": "strong", "children": ["ContentCore"] }, "."] }
+      ] } }
+    ]
+  },
+  {
+    "id": "about",
+    "slug": "/about",
+    "schemaVersion": 1,
+    "title": "About",
+    "blocks": [{ "id": "intro", "type": "hero", "content": { "heading": "About us" } }]
+  }
+]
+```
+
+```tsx
+// App.tsx
+import { CmsPage, CmsProvider, createStaticSource } from "@contentcore/react";
+import { blocks } from "./blocks";
+import pages from "./content/pages.json";
+
+const source = createStaticSource({ pages }); // each page is validated once, on first use
+
+export function App() {
+  return (
+    <CmsProvider source={source} blocks={blocks} fallbacks={{ notFound: (slug) => <p>No page at {slug}</p> }}>
+      <CmsPage slug={window.location.pathname} />
+    </CmsProvider>
+  );
+}
+```
+
+`/` renders `<section><h1>Welcome</h1><p>Explore our products</p></section><p>Built with <strong>ContentCore</strong>.</p>` on the first render, with no loading state.
+
+**Use it for:** marketing sites, docs, landing pages, content edited in pull requests, tests and offline apps.
+
+### 2. Dynamic content: from your API or CMS
+
+Pages load at runtime, so editors can publish without a deploy. The cache, retries, timeouts and ETag revalidation are on by default.
+
+**The backend** needs one endpoint: `GET /api/content/pages?slug=/about&locale=fr`. It returns the page JSON, or a 404 when there is no page. Here it is as a standard `Request → Response` handler, which runs as-is in Next.js route handlers, Hono, Bun, Deno and Workers:
+
+```ts
+// api/content/pages.ts
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const page = await db.pages.find({
+    slug: url.searchParams.get("slug") ?? "/",
+    locale: url.searchParams.get("locale"),
+  }); // your database or CMS
+  if (!page) return Response.json(null, { status: 404 });
+
+  const body = JSON.stringify(page);
+  const etag = `"${page.updatedAt}"`;            // anything that changes when the page changes
+  const headers = { etag, "cache-control": "public, max-age=0, s-maxage=60, stale-while-revalidate=300" };
+  if (request.headers.get("if-none-match") === etag) return new Response(null, { status: 304, headers });
+  return new Response(body, { headers: { ...headers, "content-type": "application/json" } });
+}
+```
+
+**The frontend:**
+
+```tsx
+// App.tsx
+import { CmsPage, CmsProvider, createApiSource, usePrefetch } from "@contentcore/react";
+import { blocks } from "./blocks";
+
+const source = createApiSource({
+  baseUrl: "/api/content",
+  cache: { ttl: 30_000 },           // fresh for 30 s; then served instantly while refreshing in the background
+});
+
+const fallbacks = {
+  loading: <p>Loading…</p>,
+  notFound: (slug: string) => <p>No page at {slug}</p>,
+  error: (_error: unknown, retry: () => void) => <button onClick={retry}>Couldn't load. Try again</button>,
+};
+
+export function App({ path }: { path: string }) {
+  return (
+    <CmsProvider source={source} blocks={blocks} fallbacks={fallbacks}>
+      <nav>
+        <NavLink href="/">Home</NavLink> <NavLink href="/about">About</NavLink>
+        <button onClick={() => source.invalidate()}>Refresh content</button>
+      </nav>
+      <CmsPage slug={path} />
+    </CmsProvider>
+  );
+}
+
+// Warm the cache on hover, so the next page renders instantly
+function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
+  const prefetch = usePrefetch();
+  return <a href={href} onMouseEnter={() => prefetch(href)}>{children}</a>;
+}
+```
+
+What users see:
+- **First visit:** the `loading` fallback, then the page.
+- **Pages already visited or prefetched:** render instantly from the cache.
+- **Published changes:** show up after the `ttl`. The visible page updates in place, with no flash.
+- **API down:** the last good copy keeps showing (stale-if-error, 24 h by default). If nothing is cached, the `error` fallback appears with a retry button.
+
+**Use it for:** content editors change often, CMS-driven sites, localised content and per-environment content.
+
+### 3. Both (recommended for production): dynamic, with a static safety net
+
+Load from the API, and fall back to a snapshot bundled with the app if the API fails:
+
+```ts
+import { createApiSource, createFallbackSource, createStaticSource } from "@contentcore/react";
+import snapshot from "./content/pages.json"; // exported from the CMS at build time
+
+export const source = createFallbackSource(
+  createApiSource({ baseUrl: "/api/content" }),
+  createStaticSource({ pages: snapshot }),
+  { onError: "next" },                         // on an API error or timeout, serve the snapshot
+);
+```
+
+### 4. Dynamic content rendered on the server
+
+For SEO and fast first paint, load on the server and render the page directly. In a Next.js App Router page:
+
+```tsx
+// app/[[...slug]]/page.tsx: a server component, so import from @contentcore/core
+import { createApiSource } from "@contentcore/core";
+import { notFound } from "next/navigation";
+import { ContentPage } from "@/components/ContentPage"; // "use client": <CmsProvider…><CmsPage page={page} /></CmsProvider>
+
+const source = createApiSource({ baseUrl: process.env.CONTENT_API! });
+export const revalidate = 60;
+
+export default async function Page({ params }: { params: Promise<{ slug?: string[] }> }) {
+  const page = await source.getPage("/" + ((await params).slug ?? []).join("/"));
+  if (!page) notFound();
+  return <ContentPage page={page} />;
+}
+```
+
+`<CmsPage page={page} />` renders synchronously from a page you already have, with no source request. That works for any server: Express, Remix, Astro or workers. See the [embedding guide](docs/embedding.md).
+
+### 5. Live data inside static content
+
+Content decides *what* to show, and the block fetches *live* values such as prices, stock or scores at render time:
+
+```tsx
+const productCard = defineBlock({
+  schema: z.object({ productId: z.string(), headline: z.string() }), // stored in content
+  component: ({ content }) => {
+    const price = useLivePrice(content.productId);                   // your data hook (SWR, React Query, fetch…)
+    return (
+      <article>
+        <h3>{content.headline}</h3>
+        <p>{price ?? "…"}</p>
+      </article>
+    );
+  },
+});
+```
+
+### Which one?
+
+| | Static | Dynamic | Dynamic + static fallback | Server-rendered dynamic |
+|---|---|---|---|---|
+| Content changes without a deploy | ❌ | ✅ | ✅ | ✅ |
+| Works offline / API down | ✅ | ✅ cached pages | ✅ every page | ✅ cached pages (+ CDN) |
+| First render | instant | loading, then cached | loading, then cached | instant (HTML) |
+| SEO | needs SSR or prerender | needs SSR | needs SSR | ✅ |
+| Source | `createStaticSource` | `createApiSource` | `createFallbackSource` | `@contentcore/core` on the server, `<CmsPage page>` |
+
+Runnable versions: [`examples/vite-app`](examples/vite-app) (static, plus dynamic with failover when `VITE_CONTENT_API` is set), [`examples/nextjs-app`](examples/nextjs-app) (server-rendered), [`examples/node-server`](examples/node-server) (the API and SSR).
+
 ## Features
 
 | | | Docs |
@@ -68,7 +280,7 @@ npm i @contentcore/react zod
 
 ## Documentation
 
-1. [Getting started](docs/getting-started.md): install to rendered page in ten minutes
+1. [Getting started](docs/getting-started.md): install to rendered page in ten minutes ([static and dynamic examples above](#static-and-dynamic-content))
 2. [Embedding in your app](docs/embedding.md): SPA, Next.js (App and Pages Router), React Router/Remix, Node/Bun/Deno servers, edge workers, Astro, React Native; plus page patterns (catch-all routes, sections inside app pages, multiple regions, layouts, modals, locales, previews, A/B tests, editor controls)
 3. [Content model](docs/content-model.md): `PageDocument`, block ids, slugs, locales, versioning and migrations
 4. [Blocks](docs/blocks.md): `defineBlock`, schemas, registries, failure handling, the `html` block

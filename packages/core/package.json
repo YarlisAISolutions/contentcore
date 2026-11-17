@@ -1,7 +1,7 @@
 {
   "name": "@contentcore/core",
-  "version": "0.1.1",
-  "description": "Framework-agnostic ContentCore contracts: page documents, validation, schema migrations, static and API content sources.",
+  "version": "0.2.0",
+  "description": "Framework-agnostic ContentCore: page documents, validation, migrations, cached and highly available sources, content stores and a content API handler.",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -34,6 +34,16 @@
       "require": {
         "types": "./dist/index.d.cts",
         "default": "./dist/index.cjs"
+      }
+    },
+    "./fs": {
+      "import": {
+        "types": "./dist/fs.d.ts",
+        "default": "./dist/fs.js"
+      },
+      "require": {
+        "types": "./dist/fs.d.cts",
+        "default": "./dist/fs.cjs"
       }
     },
     "./package.json": "./package.json"

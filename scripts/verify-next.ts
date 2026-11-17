@@ -29,6 +29,8 @@ try {
     assert(about.includes("About us"), "about page missing");
     const shop = await (await fetch(`${server.url}/shop`)).text();
     assert(shop.includes("Spring sale"), "embedded section missing on /shop");
+    const studio = await fetch(`${server.url}/studio`);
+    assert(studio.status === 200 && (await studio.text()).includes("ContentCore Studio"), "studio route missing");
     const missing = await fetch(`${server.url}/does-not-exist`);
     assert(missing.status === 404, `expected 404, got ${missing.status}`);
     const api = await fetch(`${server.url}/api/content/pages?slug=/about&locale=fr`);
@@ -43,7 +45,7 @@ try {
     assert(wrong.status === 401, "revalidate webhook must reject a wrong secret");
     const ok = await fetch(`${server.url}/api/revalidate`, { method: "POST", headers: { "x-revalidate-secret": "verify-only-secret" }, body: JSON.stringify({ slug: "/" }) });
     assert(ok.status === 200, `revalidate webhook with the right secret returned ${ok.status}`);
-    console.log("✓ next start: prerendered pages, metadata, embedded section, 404, content API (ETag), webhook auth");
+    console.log("✓ next start: prerendered pages, metadata, embedded section, studio route, 404, content API (ETag), webhook auth");
   } finally {
     server.stop();
   }

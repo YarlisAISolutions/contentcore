@@ -68,6 +68,29 @@ Renders an `HtmlNode[]` tree with sanitisation. See [blocks](blocks.md#rich-cont
 
 All options are listed in [sources and caching](sources-and-caching.md).
 
+## Stores and the content API (`@contentcore/core`)
+
+| | |
+|---|---|
+| `ContentStore` | `list()`, `get(id)`, `save(page, { expectedRevision })`, `delete(id, { expectedRevision })` |
+| `createMemoryStore(pages)` | `MemoryStore`: a store and a `ContentSource`, plus `exportPages()`, `importPages()`, `onChange()` |
+| `createApiStore({ baseUrl, headers?, credentials?, fetch? })` | Store over the content API (never cached) |
+| `createContentApiHandler(store, { authorize?, publicRead?, basePath?, maxBodyBytes?, cacheControl?, onChange? })` | `(request) => Promise<Response \| null>` |
+| `createFileStore(path, { indent? })` from `@contentcore/core/fs` | JSON-file store for Node, Bun and Deno |
+| `prepareForSave`, `checkRevision`, `revisionOf`, `findBySlug`, `summarize` | Building blocks for custom stores |
+
+See [Managing and editing content](editing.md).
+
+## Editor (`@contentcore/editor`)
+
+| | |
+|---|---|
+| `<ContentStudio store blocks onSaved? onDeleted? title? actions? jsonSchemas? unstyled? />` | The studio UI |
+| `useStudio(store, hooks)` | The studio's state, for building a custom UI |
+| `SchemaForm`, `JsonField`, `RichTextEditor` | The building blocks |
+| `jsonSchemaOf(schema)`, `defaultValue(jsonSchema)`, `cleanNodes(nodes)` | Helpers |
+| `STUDIO_CSS` | The default stylesheet (all selectors are prefixed `.cc-`) |
+
 ## Documents (`@contentcore/core`)
 
 | | |
@@ -97,6 +120,8 @@ All options are listed in [sources and caching](sources-and-caching.md).
 | `ContentValidationError` | `VALIDATION` | `issues: { path, message }[]` |
 | `UnsupportedSchemaVersionError` | `UNSUPPORTED_SCHEMA_VERSION` | `schemaVersion` |
 | `ContentSourceError` | `SOURCE` | `status?`, `url?`, `cause` |
+| `ContentConflictError` | `CONFLICT` | `currentRevision?` |
+| `ContentForbiddenError` | `FORBIDDEN` | `status` (401 or 403) |
 
 All extend `ContentcoreError`. Use `isContentcoreError(e)` and `isAbortError(e)` rather than `instanceof` across bundles.
 

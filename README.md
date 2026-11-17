@@ -46,7 +46,8 @@ export default function App() {
 | Package | What it is | |
 |---|---|---|
 | [`@contentcore/react`](packages/react) | `CmsProvider`, `CmsPage`, `defineBlock`, hooks, the `html` block for every HTML/SVG/MathML element. Re-exports core. | [npm](https://www.npmjs.com/package/@contentcore/react) |
-| [`@contentcore/core`](packages/core) | Contracts, validation, migrations, cached and highly available sources, HTML catalogue. No React, no dependencies, server-safe. | [npm](https://www.npmjs.com/package/@contentcore/core) |
+| [`@contentcore/core`](packages/core) | Contracts, validation, migrations, cached and highly available sources, content stores and a content API handler, HTML catalogue. No React, no dependencies, server-safe. | [npm](https://www.npmjs.com/package/@contentcore/core) |
+| [`@contentcore/editor`](packages/editor) | **ContentCore Studio**: a UI to manage and edit pages (forms from your schemas, rich text, live preview), for static JSON and API content. | [npm](https://www.npmjs.com/package/@contentcore/editor) |
 
 ```bash
 npm i @contentcore/react zod
@@ -264,6 +265,50 @@ const productCard = defineBlock({
 
 Runnable versions: [`examples/vite-app`](examples/vite-app) (static, plus dynamic with failover when `VITE_CONTENT_API` is set), [`examples/nextjs-app`](examples/nextjs-app) (server-rendered), [`examples/node-server`](examples/node-server) (the API and SSR).
 
+## Managing content: ContentCore Studio
+
+`@contentcore/editor` is a UI to manage and edit pages. It covers listing, creating and deleting pages; forms generated from your block schemas; rich text; live validation and preview; and conflict-safe saving. It works with **static** and **API** content.
+
+```bash
+npm i @contentcore/editor
+```
+
+**Static content (JSON in your repo):** edit in the browser, then **Export JSON** and commit.
+
+```tsx
+import { createMemoryStore } from "@contentcore/react";
+import { ContentStudio } from "@contentcore/editor";
+import { blocks } from "./blocks";            // the registry your site renders with
+import pages from "./content/pages.json";
+
+const store = createMemoryStore(pages);
+
+export const Studio = () => <ContentStudio store={store} blocks={blocks} />;
+```
+
+**API content:** the studio in the browser, and one handler on the server:
+
+```tsx
+// Browser
+import { createApiStore } from "@contentcore/react";
+const store = createApiStore({ baseUrl: "/api/content", headers: () => ({ authorization: `Bearer ${token}` }) });
+<ContentStudio store={store} blocks={blocks} onSaved={(s) => siteSource.invalidate(s.page.slug)} />
+```
+
+```ts
+// Server: any runtime (Next.js route handler, Hono, Bun, Deno, Workers, Node)
+import { createContentApiHandler } from "@contentcore/core";
+import { createFileStore } from "@contentcore/core/fs";    // saves to content/pages.json; or your own DB store
+
+const handle = createContentApiHandler(createFileStore("content/pages.json"), {
+  authorize: (request) => isEditor(request),              // list/write/delete are denied by default
+});
+// handle(request) → Response: the public read contract for sites, plus list/get/PUT/DELETE for the studio,
+// with server-side validation, unique slugs, If-Match (412 on conflicts) and a body size limit.
+```
+
+The full guide is in [docs/editing.md](docs/editing.md). For a runnable version with both modes, see [`examples/studio`](examples/studio).
+
 ## Features
 
 | | | Docs |
@@ -275,6 +320,7 @@ Runnable versions: [`examples/vite-app`](examples/vite-app) (static, plus dynami
 | **Every HTML element** | All HTML, legacy HTML, SVG 2, MathML Core and custom elements; sanitised at render time | [HTML block](docs/blocks.md#rich-content-the-html-block) |
 | **Fallbacks** | Loading, not found, error + retry, unknown/invalid/crashed blocks; unstyled | [API](docs/api-reference.md#cmsfallbacks) |
 | **Capabilities** | `useCapabilities().can("page:edit")` for editor UI hints | [Embedding](docs/embedding.md#9-editor-affordances) |
+| **Studio UI** | Manage and edit pages for static JSON and API content; schema-driven forms, rich text, live preview, conflict-safe saves | [Editing](docs/editing.md) |
 | **Versioned content** | `schemaVersion` + migrations; newer content fails loudly instead of rendering wrong | [Content model](docs/content-model.md) |
 | **Every platform** | Linux, macOS, Windows · Node 20/22/24, Bun, Deno, edge · Chromium, Firefox, WebKit · React 18/19 · Next.js | [Platform support](docs/platform-support.md) |
 
@@ -285,10 +331,11 @@ Runnable versions: [`examples/vite-app`](examples/vite-app) (static, plus dynami
 3. [Content model](docs/content-model.md): `PageDocument`, block ids, slugs, locales, versioning and migrations
 4. [Blocks](docs/blocks.md): `defineBlock`, schemas, registries, failure handling, the `html` block
 5. [Sources and caching](docs/sources-and-caching.md): static, API, cached and fallback sources; the content API contract; CMS adapters; high availability
-6. [Best practices](docs/best-practices.md): production checklist (setup, content, performance, reliability, security, operations)
-7. [Platform support](docs/platform-support.md): what runs where, and how each platform is verified
-8. [API reference](docs/api-reference.md)
-9. [Architecture](docs/ARCHITECTURE.md): boundaries, design decisions, versioning policy, roadmap
+6. [Managing and editing content](docs/editing.md): ContentCore Studio, content stores, the management API, custom stores
+7. [Best practices](docs/best-practices.md): production checklist (setup, content, performance, reliability, security, operations)
+8. [Platform support](docs/platform-support.md): what runs where, and how each platform is verified
+9. [API reference](docs/api-reference.md)
+10. [Architecture](docs/ARCHITECTURE.md): boundaries, design decisions, versioning policy, roadmap
 
 ## Examples
 
@@ -299,6 +346,7 @@ Every example runs in CI against the packed packages. [Overview](examples/README
 | [`examples/vite-app`](examples/vite-app) | **Feature tour** SPA: typed blocks, rich HTML/SVG/MathML, sanitisation, capabilities, prefetching links, embedded section, locales, failover to a bundled snapshot, every fallback state |
 | [`examples/nextjs-app`](examples/nextjs-app) | **Next.js App Router**: server-loaded pages, metadata, ISR, catch-all route, embedded section, content API route with ETag, publish webhook |
 | [`examples/node-server`](examples/node-server) | **Node / Bun / Deno** server: the content API contract (ETag, 304, CDN headers) and server rendering with safe hydration data |
+| [`examples/studio`](examples/studio) | **ContentCore Studio**: edit static JSON in the browser (import/export) or through the content API saving to `content/pages.json`; token auth |
 | [`examples/edge-worker`](examples/edge-worker) | **Edge** (Cloudflare Workers, Vercel Edge, Deno Deploy): streaming render with a per-isolate cache |
 
 ## Performance
@@ -317,8 +365,8 @@ Every example runs in CI against the packed packages. [Overview](examples/README
 
 ```bash
 bun install
-bun run check              # build, typecheck, 86 tests, packed tarballs on Node/Bun/Deno + edge VM
-bun run verify:browsers    # Chromium, Firefox, WebKit via Playwright
+bun run check              # build, typecheck, 130 tests, packed tarballs on Node/Bun/Deno + edge VM
+bun run verify:browsers    # Chromium, Firefox, WebKit via Playwright (site and studio)
 bun run verify:next        # Next.js build + start
 bun run bench
 ```

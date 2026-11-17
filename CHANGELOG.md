@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.2.0 (2026-11-17)
+
+- **New package: `@contentcore/editor` (ContentCore Studio).** A UI to manage and edit pages:
+  - page list, create and delete;
+  - page settings and block editing, with forms generated from each block's schema (Standard JSON Schema; Zod 4.2+) and a JSON fallback;
+  - rich text for the `html` block, with pasted HTML cleaned;
+  - live validation and preview;
+  - conflict-safe saving;
+  - Import/Export JSON for static content.
+- **Core: the write side.**
+  - `ContentStore`, plus `createMemoryStore` (also a `ContentSource`) and `createApiStore`.
+  - `createContentApiHandler`: a `Request → Response` content API for any runtime. It serves the public read contract plus list/get/PUT/DELETE, denies writes by default, validates on the server, keeps slugs unique, uses If-Match with 412, and caps body size.
+  - `@contentcore/core/fs` `createFileStore`, for Node, Bun and Deno: atomic, serialised writes to a JSON file.
+- **Core: helpers and errors.**
+  - Helpers for custom stores: `prepareForSave`, `checkRevision`, `revisionOf`, `findBySlug`, `summarize`.
+  - New errors: `ContentConflictError` (`CONFLICT`) and `ContentForbiddenError` (`FORBIDDEN`).
+- **Examples:** `examples/studio` (both modes, token-protected API), and a `/studio` route in `examples/nextjs-app`.
+- **Docs:** [Managing and editing content](docs/editing.md).
+
 ## 0.1.1 (2026-11-17)
 
 - **Every platform:**

@@ -24,11 +24,11 @@ try {
   const tarballs = await packAll(dir);
 
   // 1. Package-quality linters on the tarballs.
-  for (const tgz of [tarballs.core, tarballs.react]) {
+  for (const tgz of [tarballs.core, tarballs.react, tarballs.editor]) {
     await $`npx -y publint@0.3.25 ${tgz} --strict`.quiet();
     await $`npx -y @arethetypeswrong/cli@0.18.5 ${tgz} --profile node16`.quiet();
   }
-  console.log("✓ publint and arethetypeswrong pass for both packages");
+  console.log("✓ publint and arethetypeswrong pass for all three packages");
 
   // 2. Vite app.
   if (!args.has("--skip-vite")) {
@@ -53,6 +53,15 @@ const page = parsePageDocument({ id: "home", slug: "/", schemaVersion: 1, blocks
 const out = renderToString(h(CmsProvider, { source: createStaticSource({ pages: [page] }), blocks: { hero, html: htmlBlock } }, h(CmsPage, { page })));
 if (out !== "<h1>Welcome</h1><p>hi</p><a>l</a>") throw new Error("render mismatch: " + out);
 if (typeof createApiSource({ baseUrl: "/x" }).peek !== "function") throw new Error("cache not on by default");
+// The Node-only file store (subpath export) on this runtime.
+const { createFileStore } = await import("@contentcore/core/fs");
+const { mkdtempSync, readFileSync } = await import("node:fs");
+const { join } = await import("node:path");
+const { tmpdir } = await import("node:os");
+const file = join(mkdtempSync(join(tmpdir(), "cc-smoke-")), "pages.json");
+const fileStore = createFileStore(file);
+await Promise.all([1, 2, 3].map((n) => fileStore.save({ id: "p" + n, slug: "/p" + n, schemaVersion: 1, blocks: [] })));
+if (JSON.parse(readFileSync(file, "utf8")).length !== 3) throw new Error("file store lost a write");
 console.log("esm ok");
 `,
   );
@@ -68,14 +77,14 @@ console.log("cjs ok");
   const run = {
     node: (f: string) => ["node", f],
     bun: (f: string) => ["bun", f],
-    deno: (f: string) => ["deno", "run", "--allow-read", "--allow-env", "--allow-net", "--allow-sys", f],
+    deno: (f: string) => ["deno", "run", "--allow-read", "--allow-write", "--allow-env", "--allow-net", "--allow-sys", f],
   } as Record<string, (f: string) => string[]>;
   for (const rt of runtimes) {
     for (const file of rt === "deno" ? ["smoke.mjs"] : ["smoke.mjs", "smoke.cjs"]) {
       const cmd = run[rt]!(file);
       await $`${cmd}`.cwd(smokeDir).quiet();
     }
-    console.log(`✓ ${rt}: ESM${rt === "deno" ? "" : " + CommonJS"} imports and server render`);
+    console.log(`✓ ${rt}: ESM${rt === "deno" ? "" : " + CommonJS"} imports, server render, file store`);
   }
 
   // 4. Node server example (content API contract + SSR) per runtime.

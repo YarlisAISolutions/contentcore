@@ -32,6 +32,8 @@ Every row marked **CI** runs on every pull request. "Pattern" rows are documente
 | React 19 | **CI** | Full unit suite |
 | React 18.3 | **CI** | Full unit suite on React 18 |
 | Next.js 16, App Router (RSC + client components, ISR, route handlers) | **CI** | `examples/nextjs-app`: `next build` + `next start`, prerendered pages, metadata, embedded section, 404, content API with ETag, webhook auth |
+| `@contentcore/editor` (Studio) | **CI** | Chromium, Firefox, WebKit: static mode (edit, preview, save, export) and API mode (auth, save to disk, public read); builds in Next.js |
+| `@contentcore/core/fs` file store | **CI** | Node 20/22/24 on Linux, macOS, Windows (unit tests), Bun and Deno (smoke tests) |
 | Vite | **CI** | `examples/vite-app` type-checks and builds from the packed tarballs |
 | Next.js Pages Router, React Router / Remix, Astro, Express / Fastify / Hono | Pattern | [Embedding guide](embedding.md) |
 

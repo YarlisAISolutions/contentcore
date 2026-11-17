@@ -1,6 +1,11 @@
 # ContentCore architecture
 
-ContentCore is a rendering SDK for CMS-driven pages. It deliberately does **not** include a CMS backend or an editing UI. Content editing, revisions and roles belong to a CMS (Payload, Strapi, your own). ContentCore defines the contract between stored content and React, and makes reading that content fast and reliable.
+ContentCore is a content SDK for React: it defines the contract between stored content and React, makes reading that content fast and reliable, and (since 0.2) lets people edit it.
+- **Reading** is the `ContentSource` side: static, API, cached and fallback sources.
+- **Writing** is the `ContentStore` side: memory, file, API or your own stores, plus a `Request → Response` content API handler.
+- **Editing** is ContentCore Studio (`@contentcore/editor`), which works against any store.
+
+ContentCore is still not a full CMS. Revision history, roles, workflows and a media library belong to your backend or a CMS behind a custom store.
 
 ## Boundaries
 
@@ -72,5 +77,5 @@ The `html` block stores markup as a tree of `HtmlNode` data, never as an HTML st
 ## Roadmap
 
 - `@contentcore/payload`: a first-party Payload adapter (`transform` plus preview tokens).
-- `@contentcore/editor`: in-app editing for teams that need it, built on stable block ids.
+- Studio: revision history and rollback, scheduled publishing, roles and approvals, media library.
 - An optional persistent cache layer (IndexedDB / KV) behind the same `CachedContentSource` interface.

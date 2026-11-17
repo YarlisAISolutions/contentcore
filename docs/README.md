@@ -1,3 +1,5 @@
+<img src="../brand/logo.svg" alt="ContentCore logo" width="64" height="64" align="right">
+
 # ContentCore documentation
 
 | Guide | Read it when |

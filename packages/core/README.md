@@ -1,3 +1,5 @@
+<img src="https://raw.githubusercontent.com/YarlisAISolutions/contentcore/main/brand/logo-512.png" alt="ContentCore logo" width="72" height="72" align="right">
+
 # @contentcore/core
 
 The framework-agnostic half of [ContentCore](https://www.npmjs.com/package/@contentcore/react). It has no React and no runtime dependencies, so it is safe to use on servers, in edge functions and in React Server Components.

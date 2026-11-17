@@ -28,8 +28,9 @@ export interface FileStore extends ContentStore {
 
 /**
  * Pages are kept as a JSON array, sorted by slug and locale for stable diffs.
- * Writes are serialised (one at a time) and atomic (write a temp file, then rename),
- * so a crash or two editors saving at once never leaves a half-written file.
+ * Writes are atomic (write a temp file, then rename), so a crash never leaves a half-written
+ * file, and serialised within this process, so concurrent saves through one store never lose
+ * each other. Run a single writer process per file (e.g. one content API server).
  */
 export function createFileStore(path: string, options: FileStoreOptions = {}): FileStore {
   const indent = options.indent ?? 2;
@@ -58,6 +59,9 @@ export function createFileStore(path: string, options: FileStoreOptions = {}): F
     const pages: StoredPage[] = [];
     for (const item of raw) {
       const page = prepareForSave(item, pages.map((p) => p.page));
+      if (pages.some((p) => p.page.id === page.id)) {
+        throw new ContentValidationError([{ path: "id", message: `duplicate page id "${page.id}" in ${path}` }], "file store");
+      }
       pages.push({ page, revision: revisionOf(page) });
     }
     cache = { ...info, pages };
@@ -103,7 +107,7 @@ export function createFileStore(path: string, options: FileStoreOptions = {}): F
         const page = prepareForSave(input, pages.map((s) => s.page));
         checkRevision(
           pages.find((s) => s.page.id === page.id),
-          opts.expectedRevision,
+          opts,
           page.id,
         );
         const next = pages.filter((s) => s.page.id !== page.id).map((s) => s.page);

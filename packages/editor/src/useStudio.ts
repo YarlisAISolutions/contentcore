@@ -101,16 +101,27 @@ export function useStudio(store: ContentStore, hooks: { onSaved?: (s: StoredPage
       if (!entry) return;
       setStatus({ kind: "saving" });
       try {
-        let expected = entry.base?.revision;
-        if (options.overwrite) expected = (await store.get(id))?.revision;
-        const saved = await store.save(entry.draft, { expectedRevision: expected });
-        setEntries((e) => ({ ...e, [id]: { draft: entry.draft, base: saved, dirty: false } }));
+        const sent = entry.draft;
+        let opts: { expectedRevision?: string; mustNotExist?: boolean } = entry.base
+          ? { expectedRevision: entry.base.revision }
+          : { mustNotExist: true };
+        if (options.overwrite) {
+          const latest = await store.get(id);
+          opts = latest ? { expectedRevision: latest.revision } : { mustNotExist: true };
+        }
+        const saved = await store.save(sent, opts);
+        // Edits typed while the save was in flight are kept (and stay unsaved).
+        setEntries((e) => {
+          const now = e[id];
+          const changed = Boolean(now && now.draft !== sent);
+          return { ...e, [id]: { draft: changed && now ? now.draft : sent, base: saved, dirty: changed } };
+        });
         setStatus({ kind: "saved", message: `Saved ${saved.page.slug}` });
         hooksRef.current.onSaved?.(saved);
         await refresh();
       } catch (error) {
         if (isContentcoreError(error) && error.code === "CONFLICT") {
-          setEntries((e) => ({ ...e, [id]: { ...entry, conflict: error.message } }));
+          setEntries((e) => (e[id] ? { ...e, [id]: { ...e[id], conflict: error.message } } : e));
           setStatus({ kind: "conflict", message: error.message });
         } else fail(error);
       }

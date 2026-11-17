@@ -19,7 +19,9 @@ npm i @contentcore/editor @contentcore/react react react-dom
 - **Live preview** rendered by your real block components.
 - **Safe saving:** revisions guard every save. If someone else saved first, you choose between *Discard mine and reload* and *Overwrite with mine*. Ctrl/Cmd+S saves.
 - **Static JSON:** *Import JSON* and *Export JSON* for content kept in your repo.
-- **Accessibility and theming:** labelled controls, keyboard support, light and dark themes. The styles are scoped to `.cc-` classes, or pass `unstyled` and style them yourself.
+- **Accessibility (WCAG 2.2 AA):** checked with axe in Chromium, Firefox and WebKit. Controls are labelled, errors are announced, every action works from the keyboard, and touch targets are comfortable. Reduced motion and forced colours are supported. Images without alt text and links without text are flagged in content.
+- **Responsive:** three columns on desktop, two on tablets, one on phones, with no horizontal scroll at 320 px.
+- **Theming:** light and dark. The styles are scoped to `.cc-` classes, or pass `unstyled` and style them yourself.
 
 ## Static content (JSON in your repo)
 

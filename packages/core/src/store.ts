@@ -24,7 +24,10 @@ export interface ContentStore {
 }
 
 export interface SaveOptions {
+  /** Fail with ContentConflictError unless the stored page still has this revision. */
   expectedRevision?: string;
+  /** Fail with ContentConflictError if a page with this id already exists (create-only). */
+  mustNotExist?: boolean;
 }
 
 export interface StoredPage {
@@ -88,8 +91,15 @@ export function prepareForSave(
   return page;
 }
 
-export function checkRevision(current: StoredPage | undefined, expected: string | undefined, id: string) {
-  if (expected === undefined) return;
+export function checkRevision(
+  current: StoredPage | undefined,
+  expected: string | SaveOptions | undefined,
+  id: string,
+) {
+  const opts: SaveOptions = typeof expected === "object" ? expected : { expectedRevision: expected };
+  if (opts.mustNotExist && current) throw new ContentConflictError(`a page with id "${id}" already exists`, current.revision);
+  if (opts.expectedRevision === undefined) return;
+  expected = opts.expectedRevision;
   if (!current) throw new ContentConflictError(`page "${id}" no longer exists`);
   if (current.revision !== expected) {
     throw new ContentConflictError(`page "${id}" was changed by someone else; reload it and re-apply your edits`, current.revision);
@@ -154,7 +164,7 @@ export function createMemoryStore(initial: readonly unknown[] = [], options: { n
     },
     async save(input, opts = {}) {
       const page = prepareForSave(input, [...pages.values()].map((s) => s.page));
-      checkRevision(pages.get(page.id), opts.expectedRevision, page.id);
+      checkRevision(pages.get(page.id), opts, page.id);
       const stored: StoredPage = { page, revision: revisionOf(page), updatedAt: now().toISOString() };
       pages.set(page.id, stored);
       emit();

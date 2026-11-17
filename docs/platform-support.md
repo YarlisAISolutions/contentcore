@@ -37,6 +37,15 @@ Every row marked **CI** runs on every pull request. "Pattern" rows are documente
 | Vite | **CI** | `examples/vite-app` type-checks and builds from the packed tarballs |
 | Next.js Pages Router, React Router / Remix, Astro, Express / Fastify / Hono | Pattern | [Embedding guide](embedding.md) |
 
+## Accessibility and screen sizes
+
+| | Status | How it is verified |
+|---|---|---|
+| WCAG 2.2 AA (automated rules) | **CI** | axe-core in Chromium, Firefox, WebKit, on every site example page and the studio's main states |
+| Phone, tablet, desktop (320 / 768 / 1440 px) | **CI** | No horizontal scroll at any width; the studio collapses from three columns to one |
+| Keyboard | **CI** | The studio's main flow is keyboard-operable |
+| Screen readers, 200%/400% zoom | Manual | Recommended before major releases ([guide](accessibility.md)) |
+
 ## Packaging
 
 | | Status |

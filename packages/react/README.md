@@ -1,3 +1,5 @@
+<img src="https://raw.githubusercontent.com/YarlisAISolutions/contentcore/main/brand/logo-512.png" alt="ContentCore logo" width="72" height="72" align="right">
+
 # @contentcore/react
 
 Render CMS-driven pages in React. Register schema-validated blocks, load pages from static JSON or your API (cached, retried and highly available by default), and render every HTML, SVG and MathML element safely.

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title">
+  <title id="title">ContentCore</title>
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7b78ff"/>
+      <stop offset="1" stop-color="#4338ca"/>
+    </linearGradient>
+    <radialGradient id="core" cx="0.4" cy="0.35" r="0.75">
+      <stop offset="0" stop-color="#fde68a"/>
+      <stop offset="1" stop-color="#f59e0b"/>
+    </radialGradient>
+  </defs>
+  <!-- Tile -->
+  <rect width="256" height="256" rx="58" fill="url(#tile)"/>
+  <!-- A "C" built from three content blocks -->
+  <g fill="none" stroke="#ffffff" stroke-width="34" stroke-linecap="butt">
+    <path d="M178.53 82.5 A68 68 0 0 0 84.29 75.91"/>
+    <path d="M75.91 84.29 A68 68 0 0 0 75.91 171.71"/>
+    <path d="M84.29 180.09 A68 68 0 0 0 178.53 173.5"/>
+  </g>
+  <!-- The core -->
+  <circle cx="128" cy="128" r="24" fill="url(#core)"/>
+</svg>

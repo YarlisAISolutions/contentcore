@@ -7,6 +7,8 @@ export {
   type PageDocument,
 } from "./contracts";
 export {
+  ContentConflictError,
+  ContentForbiddenError,
   ContentSourceError,
   ContentValidationError,
   ContentcoreError,
@@ -54,4 +56,19 @@ export {
   type HtmlLimits,
   type HtmlNode,
 } from "./html";
+export {
+  checkRevision,
+  createMemoryStore,
+  findBySlug,
+  prepareForSave,
+  revisionOf,
+  summarize,
+  type ContentStore,
+  type MemoryStore,
+  type PageSummary,
+  type SaveOptions,
+  type StoredPage,
+} from "./store";
+export { createApiStore, type ApiStoreOptions } from "./api-store";
+export { createContentApiHandler, type ContentAction, type ContentApiHandlerOptions } from "./api-handler";
 export type { StandardSchemaV1 } from "./standard-schema";

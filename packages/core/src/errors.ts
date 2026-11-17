@@ -6,7 +6,7 @@ export interface ValidationIssue {
   message: string;
 }
 
-export type ContentcoreErrorCode = "VALIDATION" | "SOURCE" | "UNSUPPORTED_SCHEMA_VERSION";
+export type ContentcoreErrorCode = "VALIDATION" | "SOURCE" | "UNSUPPORTED_SCHEMA_VERSION" | "CONFLICT" | "FORBIDDEN";
 
 /** Base class for every error ContentCore throws. Check `code` rather than `instanceof` across bundles. */
 export class ContentcoreError extends Error {
@@ -64,7 +64,7 @@ export function isContentcoreError(error: unknown): error is ContentcoreError {
     error !== null &&
     "code" in error &&
     typeof (error as { code: unknown }).code === "string" &&
-    ["VALIDATION", "SOURCE", "UNSUPPORTED_SCHEMA_VERSION"].includes((error as { code: string }).code)
+    ["VALIDATION", "SOURCE", "UNSUPPORTED_SCHEMA_VERSION", "CONFLICT", "FORBIDDEN"].includes((error as { code: string }).code)
   );
 }
 
@@ -75,5 +75,25 @@ export function isAbortError(error: unknown): boolean {
 export function throwIfAborted(signal: AbortSignal | undefined): void {
   if (signal?.aborted) {
     throw signal.reason ?? abortError();
+  }
+}
+
+/** A write was based on an old revision: someone else changed the page first. Reload and re-apply. */
+export class ContentConflictError extends ContentcoreError {
+  readonly currentRevision?: string;
+  constructor(message: string, currentRevision?: string) {
+    super("CONFLICT", message);
+    this.name = "ContentConflictError";
+    this.currentRevision = currentRevision;
+  }
+}
+
+/** The caller is not allowed to perform this action. */
+export class ContentForbiddenError extends ContentcoreError {
+  readonly status: number;
+  constructor(message = "not allowed", status = 403) {
+    super("FORBIDDEN", message);
+    this.name = "ContentForbiddenError";
+    this.status = status;
   }
 }

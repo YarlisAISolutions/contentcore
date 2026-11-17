@@ -5,15 +5,17 @@
  * Flags: --browsers=chromium,firefox,webkit
  */
 import { existsSync, readFileSync } from "node:fs";
+import { randomBytes } from "node:crypto";
 import { extname, join } from "node:path";
 import { $ } from "bun";
-import { assert, installExample, packAll, workDir } from "./lib";
+import { assert, installExample, packAll, startServer, workDir } from "./lib";
 
 const PLAYWRIGHT = "playwright@1.65.1";
 const browsers = (process.argv.find((a) => a.startsWith("--browsers="))?.split("=")[1] ?? "chromium,firefox,webkit").split(",");
 
 const { dir, cleanup } = workDir("browsers");
 let server: ReturnType<typeof Bun.serve> | undefined;
+let studioServer: { url: string; stop: () => void } | undefined;
 try {
   const tarballs = await packAll(dir, false);
   const app = await installExample("vite-app", dir, tarballs, [PLAYWRIGHT]);
@@ -98,7 +100,65 @@ try {
     console.log(`✓ ${name} ${browser.version()}: all example flows pass`);
     await browser.close();
   }
+
+  // ContentCore Studio (examples/studio): static JSON mode and content API mode.
+  const studio = await installExample("studio", dir, tarballs, [PLAYWRIGHT]);
+  await $`npm run build --silent`.cwd(studio).quiet();
+  const token = randomBytes(16).toString("hex");
+  studioServer = await startServer(["node", "server.mjs"], studio, { PORT: "0", STUDIO_TOKEN: token });
+  const sbase = studioServer.url;
+
+  for (const name of browsers) {
+    const browser = await engines[name]!.launch();
+    const context = await browser.newContext({ acceptDownloads: true });
+    const page = await context.newPage();
+    const errors: string[] = [];
+    page.on("pageerror", (e: Error) => errors.push(e.message));
+    const fieldByLabel = (label: string) => page.getByRole("textbox", { name: label, exact: true }).first();
+
+    // Static mode: edit, preview, save, export.
+    await page.goto(`${sbase}/`);
+    await page.getByRole("button", { name: /^Home/ }).click();
+    await fieldByLabel("Heading").waitFor();
+    await fieldByLabel("Heading").fill(`Hello from ${name}`);
+    await page.locator(".cc-preview h1", { hasText: `Hello from ${name}` }).waitFor();
+    await page.getByRole("button", { name: "Save", exact: true }).click();
+    await page.locator(".cc-status", { hasText: "Saved /" }).waitFor();
+    const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "Export JSON" }).click()]);
+    const exported = readFileSync(await download.path(), "utf8");
+    assert(exported.includes(`Hello from ${name}`), `${name}: exported JSON lacks the edit`);
+
+    // Rich text: type into the html block and see it in the preview.
+    const area = page.locator(".cc-rte-area").first();
+    await area.click();
+    await page.keyboard.press("End");
+    await page.keyboard.type(` typed-${name}`);
+    await page.locator(".cc-preview", { hasText: `typed-${name}` }).waitFor();
+
+    // API mode: wrong token is refused; the right token lists, saves to disk and is served publicly.
+    await page.getByLabel("Content source").selectOption("api");
+    const tokenInput = page.getByLabel("API token");
+    await tokenInput.fill("wrong-token");
+    await tokenInput.press("Enter");
+    await page.locator(".cc-status", { hasText: "forbidden" }).waitFor();
+    await tokenInput.fill(token);
+    await tokenInput.press("Enter");
+    await page.getByRole("button", { name: /^About/ }).first().click();
+    await fieldByLabel("Title").waitFor();
+    await fieldByLabel("Title").fill(`About (${name})`);
+    await page.getByRole("button", { name: "Save", exact: true }).click();
+    await page.locator(".cc-status", { hasText: "Saved /about" }).waitFor();
+    const onDisk = readFileSync(join(studio, "content", "pages.json"), "utf8");
+    assert(onDisk.includes(`About (${name})`), `${name}: save did not reach content/pages.json`);
+    const served = (await (await fetch(`${sbase}/api/content/pages?slug=/about`)).json()) as { title: string };
+    assert(served.title === `About (${name})`, `${name}: public read endpoint not updated`);
+
+    assert(errors.length === 0, `${name}: studio page errors: ${errors.join("; ")}`);
+    console.log(`✓ ${name}: studio edits static JSON (export) and API content (auth, save to disk, public read)`);
+    await browser.close();
+  }
 } finally {
+  studioServer?.stop();
   server?.stop(true);
   cleanup();
 }

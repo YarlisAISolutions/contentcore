@@ -18,13 +18,25 @@
     },
     "packages/core": {
       "name": "@contentcore/core",
-      "version": "0.1.0",
+      "version": "0.2.0",
+    },
+    "packages/editor": {
+      "name": "@contentcore/editor",
+      "version": "0.2.0",
+      "devDependencies": {
+        "@contentcore/react": "^0.2.0",
+      },
+      "peerDependencies": {
+        "@contentcore/react": "^0.2.0",
+        "react": ">=18.2.0",
+        "react-dom": ">=18.2.0",
+      },
     },
     "packages/react": {
       "name": "@contentcore/react",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "dependencies": {
-        "@contentcore/core": "^0.1.0",
+        "@contentcore/core": "^0.2.0",
       },
       "peerDependencies": {
         "react": ">=18.2.0",
@@ -33,6 +45,8 @@
   },
   "packages": {
     "@contentcore/core": ["@contentcore/core@workspace:packages/core"],
+
+    "@contentcore/editor": ["@contentcore/editor@workspace:packages/editor"],
 
     "@contentcore/react": ["@contentcore/react@workspace:packages/react"],
 

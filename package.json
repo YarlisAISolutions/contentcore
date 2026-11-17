@@ -9,10 +9,11 @@
   },
   "workspaces": [
     "packages/core",
-    "packages/react"
+    "packages/react",
+    "packages/editor"
   ],
   "scripts": {
-    "build": "bun run --filter @contentcore/core build && bun run --filter @contentcore/react build",
+    "build": "bun run --filter @contentcore/core build && bun run --filter @contentcore/react build && bun run --filter @contentcore/editor build",
     "typecheck": "bun run --filter '@contentcore/*' typecheck",
     "test": "bun test",
     "check": "bun run build && bun run typecheck && bun test && bun run verify:pack",

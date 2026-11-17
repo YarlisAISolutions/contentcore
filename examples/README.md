@@ -7,6 +7,7 @@ Each example is a standalone app that depends on the published packages. CI inst
 | [vite-app](vite-app) | Single-page app; tour of every feature | `npm i && npm run dev` | `scripts/verify-browsers.ts` (Chromium, Firefox, WebKit) |
 | [nextjs-app](nextjs-app) | Next.js 16 App Router | `npm i && npm run dev` | `scripts/verify-next.ts` |
 | [node-server](node-server) | Content API and SSR on Node, Bun or Deno | `npm i && npm start` (or `start:bun`, `start:deno`) | `scripts/verify-pack.ts` |
+| [studio](studio) | ContentCore Studio for static JSON and the content API | `npm i && npm start` (with `STUDIO_TOKEN`) | `scripts/verify-browsers.ts` (both modes, three engines) |
 | [edge-worker](edge-worker) | Cloudflare Workers / Vercel Edge / Deno Deploy | `wrangler dev worker.mjs` | `scripts/verify-pack.ts` (edge VM) |
 
 ## Feature map
@@ -31,3 +32,5 @@ Each example is a standalone app that depends on the published packages. CI inst
 | Content API contract (ETag, 304, 404, CDN headers) | `node-server/server.mjs`, `nextjs-app/app/api/content/pages/route.ts` |
 | SSR with safe hydration data | `node-server/server.mjs` |
 | Streaming edge render | `edge-worker/worker.mjs` |
+| Editing UI (`ContentStudio`), static JSON import/export | `studio/src/main.tsx`, `nextjs-app/app/studio` |
+| Content API with auth, validation, If-Match, file store | `studio/server.mjs` |

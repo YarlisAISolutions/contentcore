@@ -1,6 +1,6 @@
 {
   "name": "@contentcore/react",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Render ContentCore pages in React: register schema-validated blocks, load pages from static JSON or your API, with loading, missing-page, unknown-block and error fallbacks.",
   "license": "MIT",
   "repository": {
@@ -57,7 +57,7 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@contentcore/core": "^0.1.1"
+    "@contentcore/core": "^0.2.0"
   },
   "peerDependencies": {
     "react": ">=18.2.0"

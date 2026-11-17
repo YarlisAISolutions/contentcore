@@ -1,3 +1,5 @@
+import { abortError } from "./compat";
+
 export interface ValidationIssue {
   /** Dotted path into the document, e.g. "blocks.2.type". Empty for the root. */
   path: string;
@@ -72,6 +74,6 @@ export function isAbortError(error: unknown): boolean {
 
 export function throwIfAborted(signal: AbortSignal | undefined): void {
   if (signal?.aborted) {
-    throw signal.reason ?? new DOMException("The operation was aborted.", "AbortError");
+    throw signal.reason ?? abortError();
   }
 }

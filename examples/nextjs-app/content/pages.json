@@ -1,0 +1,317 @@
+[
+  {
+    "id": "home",
+    "slug": "/",
+    "schemaVersion": 1,
+    "title": "Home",
+    "meta": {
+      "description": "ContentCore feature tour"
+    },
+    "capabilities": [
+      "page:edit"
+    ],
+    "blocks": [
+      {
+        "id": "welcome",
+        "type": "hero",
+        "content": {
+          "heading": "Welcome",
+          "description": "Explore our products"
+        }
+      },
+      {
+        "id": "story",
+        "type": "html",
+        "content": {
+          "nodes": [
+            {
+              "tag": "h2",
+              "children": [
+                "Rich content, every element"
+              ]
+            },
+            {
+              "tag": "p",
+              "attrs": {
+                "class": "lead"
+              },
+              "children": [
+                "Text with ",
+                {
+                  "tag": "strong",
+                  "children": [
+                    "bold"
+                  ]
+                },
+                ", ",
+                {
+                  "tag": "em",
+                  "children": [
+                    "emphasis"
+                  ]
+                },
+                ", ",
+                {
+                  "tag": "mark",
+                  "children": [
+                    "highlights"
+                  ]
+                },
+                ", ",
+                {
+                  "tag": "abbr",
+                  "attrs": {
+                    "title": "HyperText Markup Language"
+                  },
+                  "children": [
+                    "HTML"
+                  ]
+                },
+                " and a ",
+                {
+                  "tag": "a",
+                  "attrs": {
+                    "href": "/pricing"
+                  },
+                  "children": [
+                    "link to pricing"
+                  ]
+                },
+                "."
+              ]
+            },
+            {
+              "tag": "a",
+              "attrs": {
+                "id": "unsafe-link",
+                "href": "javascript:alert('xss')",
+                "onclick": "alert('xss')"
+              },
+              "children": [
+                "This link had a script URL and a handler; both were removed."
+              ]
+            },
+            {
+              "tag": "figure",
+              "children": [
+                {
+                  "tag": "svg",
+                  "attrs": {
+                    "viewBox": "0 0 120 40",
+                    "width": 120,
+                    "height": 40,
+                    "role": "img",
+                    "aria-label": "Chart"
+                  },
+                  "children": [
+                    {
+                      "tag": "rect",
+                      "attrs": {
+                        "x": 0,
+                        "y": 20,
+                        "width": 30,
+                        "height": 20,
+                        "fill": "#6b8afd"
+                      }
+                    },
+                    {
+                      "tag": "rect",
+                      "attrs": {
+                        "x": 45,
+                        "y": 10,
+                        "width": 30,
+                        "height": 30,
+                        "fill": "#6b8afd"
+                      }
+                    },
+                    {
+                      "tag": "rect",
+                      "attrs": {
+                        "x": 90,
+                        "y": 0,
+                        "width": 30,
+                        "height": 40,
+                        "fill": "#6b8afd"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "tag": "figcaption",
+                  "children": [
+                    "Inline SVG"
+                  ]
+                }
+              ]
+            },
+            {
+              "tag": "math",
+              "children": [
+                {
+                  "tag": "mrow",
+                  "children": [
+                    {
+                      "tag": "mi",
+                      "children": [
+                        "E"
+                      ]
+                    },
+                    {
+                      "tag": "mo",
+                      "children": [
+                        "="
+                      ]
+                    },
+                    {
+                      "tag": "mi",
+                      "children": [
+                        "m"
+                      ]
+                    },
+                    {
+                      "tag": "msup",
+                      "children": [
+                        {
+                          "tag": "mi",
+                          "children": [
+                            "c"
+                          ]
+                        },
+                        {
+                          "tag": "mn",
+                          "children": [
+                            "2"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "tag": "details",
+              "children": [
+                {
+                  "tag": "summary",
+                  "children": [
+                    "A native disclosure widget"
+                  ]
+                },
+                {
+                  "tag": "p",
+                  "children": [
+                    "details/summary, dialog, meter, progress, time and the rest all render."
+                  ]
+                },
+                {
+                  "tag": "meter",
+                  "attrs": {
+                    "min": 0,
+                    "max": 10,
+                    "value": 7
+                  },
+                  "children": [
+                    "7/10"
+                  ]
+                }
+              ]
+            },
+            {
+              "tag": "form",
+              "attrs": {
+                "action": "/subscribe",
+                "method": "post"
+              },
+              "children": [
+                {
+                  "tag": "label",
+                  "attrs": {
+                    "for": "email"
+                  },
+                  "children": [
+                    "Email "
+                  ]
+                },
+                {
+                  "tag": "input",
+                  "attrs": {
+                    "id": "email",
+                    "type": "email",
+                    "name": "email",
+                    "value": "you@example.com"
+                  }
+                },
+                {
+                  "tag": "button",
+                  "attrs": {
+                    "type": "submit"
+                  },
+                  "children": [
+                    "Subscribe"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "next",
+        "type": "callToAction",
+        "content": {
+          "label": "See pricing",
+          "href": "/pricing"
+        }
+      }
+    ]
+  },
+  {
+    "id": "about",
+    "slug": "/about",
+    "schemaVersion": 1,
+    "title": "About",
+    "blocks": [
+      {
+        "id": "intro",
+        "type": "hero",
+        "content": {
+          "heading": "About us",
+          "description": "We build things."
+        }
+      }
+    ]
+  },
+  {
+    "id": "about-fr",
+    "slug": "/about",
+    "locale": "fr",
+    "schemaVersion": 1,
+    "title": "À propos",
+    "blocks": [
+      {
+        "id": "intro",
+        "type": "hero",
+        "content": {
+          "heading": "À propos",
+          "description": "Nous construisons des choses."
+        }
+      }
+    ]
+  },
+  {
+    "id": "promo",
+    "slug": "/sections/promo",
+    "schemaVersion": 1,
+    "blocks": [
+      {
+        "id": "promo",
+        "type": "callToAction",
+        "content": {
+          "label": "Spring sale: 20% off. Read about us",
+          "href": "/about"
+        }
+      }
+    ]
+  }
+]

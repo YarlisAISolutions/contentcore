@@ -1,4 +1,5 @@
 import type { ContentSource, GetPageOptions, PageDocument } from "../contracts";
+import { cloneData } from "../compat";
 import { throwIfAborted } from "../errors";
 import { deepFreeze } from "../freeze";
 import type { PageMigrations } from "../migrations";
@@ -57,7 +58,7 @@ export function createStaticSource(options: StaticSourceOptions): ContentSource 
     const cached = parsed.get(raw);
     if (cached) return cached;
     const page = deepFreeze(
-      parsePageDocument(structuredClone(raw), {
+      parsePageDocument(cloneData(raw), {
         migrations: options.migrations,
         context: `static source "${normalized}"`,
       }),

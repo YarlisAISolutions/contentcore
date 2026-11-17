@@ -1,4 +1,5 @@
 import type { ContentSource, GetPageOptions, PageDocument } from "./contracts";
+import { abortError } from "./compat";
 import { throwIfAborted } from "./errors";
 import { deepFreeze } from "./freeze";
 import { normalizeSlug } from "./slug";
@@ -55,7 +56,7 @@ function withSignal<T>(promise: Promise<T>, signal: AbortSignal | undefined): Pr
   if (!signal) return promise;
   throwIfAborted(signal);
   return new Promise<T>((resolve, reject) => {
-    const onAbort = () => reject(signal.reason ?? new DOMException("The operation was aborted.", "AbortError"));
+    const onAbort = () => reject(signal.reason ?? abortError());
     signal.addEventListener("abort", onAbort, { once: true });
     promise.then(
       (v) => {

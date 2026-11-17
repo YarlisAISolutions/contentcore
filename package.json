@@ -17,7 +17,10 @@
     "test": "bun test",
     "check": "bun run build && bun run typecheck && bun test && bun run verify:pack",
     "verify:pack": "bun run scripts/verify-pack.ts",
-    "bench": "bun run scripts/bench.ts"
+    "bench": "bun run scripts/bench.ts",
+    "verify:browsers": "bun run scripts/verify-browsers.ts",
+    "verify:next": "bun run scripts/verify-next.ts",
+    "verify:all": "bun run check && bun run verify:browsers && bun run verify:next"
   },
   "devDependencies": {
     "@happy-dom/global-registrator": "^21.0.4",

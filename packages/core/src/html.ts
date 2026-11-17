@@ -151,15 +151,18 @@ export function validateHtmlNodes(nodes: unknown, limits: HtmlLimits = {}): Vali
   return issues;
 }
 
-export interface HtmlContent {
+export interface HtmlBlockContent {
   nodes: HtmlNode[];
 }
+
+/** @deprecated Use `HtmlBlockContent` (renamed so it does not clash with the React `HtmlContent` component). */
+export type HtmlContent = HtmlBlockContent;
 
 /**
  * Standard Schema for `{ nodes: HtmlNode[] }`, the content of the built-in "html" block.
  * Works anywhere a Zod schema would, without depending on Zod.
  */
-export function createHtmlContentSchema(limits: HtmlLimits = {}): StandardSchemaV1<unknown, HtmlContent> {
+export function createHtmlContentSchema(limits: HtmlLimits = {}): StandardSchemaV1<unknown, HtmlBlockContent> {
   return {
     "~standard": {
       version: 1,

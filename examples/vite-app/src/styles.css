@@ -1,0 +1,61 @@
+/* ContentCore is unstyled: all styling belongs to the app. */
+:root {
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+  color: #1d1d1f;
+  background: #fff;
+}
+body {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 0.5rem;
+}
+nav a {
+  margin-right: 0.5rem;
+}
+.hero h1 {
+  margin-bottom: 0.25rem;
+}
+.edit {
+  font-size: 0.8rem;
+}
+.plans {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 1rem;
+}
+.plan {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+}
+.plan.highlighted {
+  border-color: #6b8afd;
+}
+.issue {
+  color: #a35200;
+  font-size: 0.9rem;
+}
+.promo {
+  background: #f4f6ff;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color: #eee;
+    background: #111;
+  }
+  .promo {
+    background: #1b1f33;
+  }
+}

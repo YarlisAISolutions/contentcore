@@ -262,7 +262,8 @@ export function JsonField({
   label,
   path,
   issues,
-}: Pick<FieldProps, "value" | "onChange" | "label" | "path" | "issues">) {
+  ariaLabel,
+}: Pick<FieldProps, "value" | "onChange" | "label" | "path" | "issues"> & { ariaLabel?: string }) {
   const id = useId();
   const [text, setText] = useState(() => JSON.stringify(value ?? null, null, 2));
   const [error, setError] = useState<string>();
@@ -276,6 +277,7 @@ export function JsonField({
       <textarea
         id={id}
         className="cc-json"
+        aria-label={label ? undefined : (ariaLabel ?? "JSON")}
         value={text}
         rows={Math.min(16, Math.max(3, text.split("\n").length))}
         spellCheck={false}

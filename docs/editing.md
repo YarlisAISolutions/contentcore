@@ -57,7 +57,7 @@ const api = createContentApiHandler(createFileStore("content/pages.json"), {
 The file store:
 - keeps pages sorted by slug and locale with stable indentation, so diffs are clean;
 - writes atomically (temp file, then rename, retried on Windows file locks);
-- serialises saves, so two editors can't corrupt the file;
+- serialises saves within its process, so two editors saving through the same server can't lose each other's changes (run one writer process per file);
 - picks up edits made to the file by hand.
 
 ## 2c. API content

@@ -11,7 +11,7 @@ import {
 import { act } from "react";
 import { type Root, createRoot } from "react-dom/client";
 import { z } from "zod";
-import { ContentStudio, cleanNodes, defaultValue, jsonSchemaOf } from "../src";
+import { ContentStudio, accessibilityIssues, cleanNodes, defaultValue, jsonSchemaOf } from "../src";
 
 const hero = defineBlock({
   schema: z.object({ heading: z.string().min(1, "Heading is required"), description: z.string().optional() }),
@@ -244,6 +244,100 @@ describe("ContentStudio", () => {
     const api = createApiStore({ baseUrl: "/x", fetch: (async () => Response.json({ pages: [] })) as unknown as typeof fetch });
     await mount(api);
     expect(button("Export JSON")).toBeUndefined();
+  });
+});
+
+describe("content accessibility", () => {
+  test("flags images without alt and links without text, and blocks saving", async () => {
+    expect(
+      accessibilityIssues([
+        { tag: "p", children: [{ tag: "img", attrs: { src: "/a.png" } }, { tag: "img", attrs: { src: "/b.png", alt: "" } }] },
+        { tag: "a", attrs: { href: "/x" } },
+        { tag: "a", attrs: { href: "/y", "aria-label": "Pricing" } },
+      ]).map((i) => i.path),
+    ).toEqual(["nodes.0.children.0", "nodes.1"]);
+
+    await mount(
+      createMemoryStore([
+        { id: "i", slug: "/i", schemaVersion: 1, title: "Images", blocks: [{ id: "b", type: "html", content: { nodes: [{ tag: "img", attrs: { src: "/a.png" } }] } }] },
+      ]),
+    );
+    await click(button(/Images/));
+    await flush();
+    await type(field("Title"), "Images!");
+    await flush();
+    expect(el.textContent).toContain("Image needs alt text");
+    expect(button("Save").disabled).toBe(true);
+  });
+});
+
+describe("review fixes", () => {
+  test("Ctrl/Cmd+S does not save an invalid page", async () => {
+    const store = createMemoryStore(pages);
+    await mount(store);
+    await click(button(/Home/));
+    await flush();
+    await type(field("Heading"), "");
+    await flush();
+    await act(async () => void window.dispatchEvent(new KeyboardEvent("keydown", { key: "s", ctrlKey: true })));
+    await flush();
+    expect((await store.get("home"))?.page.blocks[0]?.content).toEqual({ heading: "Welcome" });
+    expect(el.querySelector(".cc-status")?.textContent).toContain("Fix the highlighted problems");
+  });
+
+  test("focusing and leaving rich text without editing does not mark the page dirty", async () => {
+    await mount(createMemoryStore([{ id: "p", slug: "/p", schemaVersion: 1, title: "Story", blocks: [{ id: "b", type: "html", content: { nodes: [{ tag: "p", children: ["Hi"] }] } }] }]));
+    await click(button(/Story/));
+    await flush();
+    const area = el.querySelector(".cc-rte-area") as HTMLElement;
+    await act(async () => {
+      area.dispatchEvent(new FocusEvent("focus"));
+      area.dispatchEvent(new FocusEvent("blur", { bubbles: true }));
+    });
+    await flush();
+    expect(el.querySelector(".cc-dot")).toBeNull();
+    expect(button("Save").disabled).toBe(true);
+  });
+
+  test("html blocks with markup rich text would drop open in JSON mode with a note", async () => {
+    await mount(
+      createMemoryStore([
+        { id: "e", slug: "/e", schemaVersion: 1, title: "Embed", blocks: [{ id: "b", type: "html", content: { nodes: [{ tag: "iframe", attrs: { src: "https://video.example/1" } }] } }] },
+      ]),
+    );
+    await click(button(/Embed/));
+    await flush();
+    expect(el.querySelector(".cc-rte-area")).toBeNull();
+    expect(el.querySelector(".cc-json")).not.toBeNull();
+    expect(el.textContent).toContain("Edit it as JSON to keep it");
+  });
+
+  test("edits typed while a save is in flight are kept", async () => {
+    const backing = createMemoryStore(pages);
+    let release: () => void = () => {};
+    const slow: ContentStore = {
+      ...backing,
+      list: () => backing.list(),
+      get: (id) => backing.get(id),
+      delete: (id, o) => backing.delete(id, o),
+      save: async (p, o) => {
+        await new Promise<void>((r) => {
+          release = r;
+        });
+        return backing.save(p, o);
+      },
+    };
+    await mount(slow);
+    await click(button(/Home/));
+    await flush();
+    await type(field("Heading"), "First");
+    await click(button("Save"));
+    await type(field("Heading"), "Second");
+    await act(async () => release());
+    await flush();
+    expect((field("Heading") as HTMLInputElement).value).toBe("Second");
+    expect(el.querySelector(".cc-dot")).not.toBeNull();
+    expect((await backing.get("home"))?.page.blocks[0]?.content).toEqual({ heading: "First" });
   });
 });
 

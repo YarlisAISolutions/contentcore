@@ -38,7 +38,14 @@ export const STUDIO_CSS = `
 .cc-bar { grid-area: bar; display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--cc-border); flex-wrap: wrap; }
 .cc-title { font-size: 15px; }
 .cc-bar-actions { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
-.cc-status { min-width: 140px; text-align: right; color: var(--cc-muted); }
+.cc-status { min-width: min(140px, 100%); text-align: right; color: var(--cc-muted); }
+/* Anything placed in the bar (including app-provided actions) wraps and shrinks on narrow screens. */
+.cc-bar > *, .cc-bar-actions > * { max-width: 100%; min-width: 0; }
+.cc-studio .cc-button { flex-wrap: wrap; }
+.cc-studio select, .cc-studio input, .cc-studio textarea { max-width: 100%; }
+.cc-studio img, .cc-studio svg, .cc-studio video, .cc-studio iframe, .cc-studio table { max-width: 100%; }
+.cc-preview-frame { overflow-x: auto; }
+@media (max-width: 480px) { .cc-bar-actions { margin-left: 0; width: 100%; } .cc-status { text-align: left; } }
 .cc-status-saved { color: var(--cc-ok); } .cc-status-error, .cc-status-conflict { color: var(--cc-issue); }
 .cc-pages { grid-area: pages; border-right: 1px solid var(--cc-border); background: var(--cc-panel); padding: 12px; overflow: auto; }
 .cc-pages-head { display: grid; gap: 8px; margin-bottom: 12px; }
@@ -74,7 +81,15 @@ export const STUDIO_CSS = `
 .cc-row-actions button { padding: 2px 8px; }
 .cc-block-body { padding: 10px 12px; background: var(--cc-bg); border-radius: 0 0 var(--cc-radius) var(--cc-radius); }
 .cc-tabs { display: flex; gap: 4px; margin-bottom: 10px; }
-.cc-tabs [aria-selected="true"] { border-color: var(--cc-primary); color: var(--cc-primary); }
+.cc-tabs [aria-pressed="true"] { border-color: var(--cc-primary); color: var(--cc-primary); font-weight: 600; }
+.cc-sr-only { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.cc-file { position: relative; }
+.cc-file:focus-within { outline: 2px solid var(--cc-primary); outline-offset: 1px; }
+/* Comfortable touch targets (WCAG 2.5.8): every control at least 28px tall. */
+.cc-studio button, .cc-studio .cc-button, .cc-studio input, .cc-studio select { min-height: 28px; }
+@media (pointer: coarse) { .cc-studio button, .cc-studio .cc-button, .cc-studio input, .cc-studio select { min-height: 40px; } }
+@media (prefers-reduced-motion: reduce) { .cc-studio * { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+@media (forced-colors: active) { .cc-dot { forced-color-adjust: none; border: 1px solid CanvasText; } .cc-studio button:focus-visible { outline: 2px solid Highlight; } }
 .cc-object, .cc-array { border: 1px solid var(--cc-border); border-radius: var(--cc-radius); padding: 10px 12px; margin: 0 0 10px; }
 .cc-object legend, .cc-array legend { font-weight: 600; font-size: 13px; padding: 0 4px; }
 div.cc-object { border: 0; padding: 0; }

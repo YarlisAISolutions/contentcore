@@ -322,6 +322,7 @@ The full guide is in [docs/editing.md](docs/editing.md). For a runnable version 
 | **Capabilities** | `useCapabilities().can("page:edit")` for editor UI hints | [Embedding](docs/embedding.md#9-editor-affordances) |
 | **Studio UI** | Manage and edit pages for static JSON and API content; schema-driven forms, rich text, live preview, conflict-safe saves | [Editing](docs/editing.md) |
 | **Versioned content** | `schemaVersion` + migrations; newer content fails loudly instead of rendering wrong | [Content model](docs/content-model.md) |
+| **Accessible and responsive** | WCAG 2.2 AA (axe in Chromium, Firefox, WebKit), no horizontal scroll from 320 px, keyboard-operable studio, alt-text and link-text checks for editors | [Accessibility](docs/accessibility.md) |
 | **Every platform** | Linux, macOS, Windows · Node 20/22/24, Bun, Deno, edge · Chromium, Firefox, WebKit · React 18/19 · Next.js | [Platform support](docs/platform-support.md) |
 
 ## Documentation
@@ -332,10 +333,11 @@ The full guide is in [docs/editing.md](docs/editing.md). For a runnable version 
 4. [Blocks](docs/blocks.md): `defineBlock`, schemas, registries, failure handling, the `html` block
 5. [Sources and caching](docs/sources-and-caching.md): static, API, cached and fallback sources; the content API contract; CMS adapters; high availability
 6. [Managing and editing content](docs/editing.md): ContentCore Studio, content stores, the management API, custom stores
-7. [Best practices](docs/best-practices.md): production checklist (setup, content, performance, reliability, security, operations)
-8. [Platform support](docs/platform-support.md): what runs where, and how each platform is verified
-9. [API reference](docs/api-reference.md)
-10. [Architecture](docs/ARCHITECTURE.md): boundaries, design decisions, versioning policy, roadmap
+7. [Accessibility and responsive design](docs/accessibility.md): what is verified, what block authors and editors should do
+8. [Best practices](docs/best-practices.md): production checklist (setup, content, performance, reliability, security, operations)
+9. [Platform support](docs/platform-support.md): what runs where, and how each platform is verified
+10. [API reference](docs/api-reference.md)
+11. [Architecture](docs/ARCHITECTURE.md): boundaries, design decisions, versioning policy, roadmap
 
 ## Examples
 
@@ -365,8 +367,8 @@ Every example runs in CI against the packed packages. [Overview](examples/README
 
 ```bash
 bun install
-bun run check              # build, typecheck, 130 tests, packed tarballs on Node/Bun/Deno + edge VM
-bun run verify:browsers    # Chromium, Firefox, WebKit via Playwright (site and studio)
+bun run check              # build, typecheck, 142 tests, packed tarballs on Node/Bun/Deno + edge VM
+bun run verify:browsers    # Chromium, Firefox, WebKit: site + studio flows, WCAG 2.2 AA, 320/768/1440px
 bun run verify:next        # Next.js build + start
 bun run bench
 ```

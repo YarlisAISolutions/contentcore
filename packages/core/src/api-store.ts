@@ -25,12 +25,13 @@ export interface ApiStoreOptions {
 export function createApiStore(options: ApiStoreOptions): ContentStore {
   const base = options.baseUrl.replace(/\/+$/, "");
 
-  async function call(path: string, init: RequestInit & { ifMatch?: string } = {}) {
+  async function call(path: string, init: RequestInit & { ifMatch?: string; ifNoneMatch?: string } = {}) {
     const doFetch = options.fetch ?? globalThis.fetch;
     const headers = new Headers(typeof options.headers === "function" ? await options.headers() : options.headers);
     headers.set("accept", "application/json");
     if (init.body) headers.set("content-type", "application/json");
     if (init.ifMatch) headers.set("if-match", `"${init.ifMatch}"`);
+    if (init.ifNoneMatch) headers.set("if-none-match", init.ifNoneMatch);
     const request: RequestInit = { method: init.method ?? "GET", headers, cache: "no-store" };
     if (init.body) request.body = init.body;
     if (options.credentials !== undefined) request.credentials = options.credentials;
@@ -69,6 +70,7 @@ export function createApiStore(options: ApiStoreOptions): ContentStore {
         method: "PUT",
         body: JSON.stringify(page),
         ifMatch: opts.expectedRevision,
+        ifNoneMatch: opts.mustNotExist ? "*" : undefined,
       });
       return (await response.json()) as StoredPage;
     },

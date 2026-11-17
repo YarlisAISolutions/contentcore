@@ -127,3 +127,26 @@ export function cleanNodes(nodes: readonly HtmlNode[]): HtmlNode[] {
     return acc;
   }, []);
 }
+
+/**
+ * Content accessibility checks for rich text (WCAG 1.1.1 non-text content, 2.4.4 link purpose):
+ * images need alt text (alt="" marks a decorative image) and links need text or a label.
+ */
+export function accessibilityIssues(nodes: readonly HtmlNode[], path = "nodes"): Array<{ path: string; message: string }> {
+  const issues: Array<{ path: string; message: string }> = [];
+  const textOf = (n: HtmlNode): string =>
+    typeof n === "string" ? n : (n.attrs?.["aria-label"] as string) || (n.attrs?.alt as string) || (n.children ?? []).map(textOf).join("");
+  nodes.forEach((node, i) => {
+    if (typeof node === "string") return;
+    const at = `${path}.${i}`;
+    const tag = node.tag.toLowerCase();
+    if (tag === "img" && typeof node.attrs?.alt !== "string") {
+      issues.push({ path: at, message: 'Image needs alt text (use alt="" if it is decorative)' });
+    }
+    if (tag === "a" && node.attrs?.href !== undefined && textOf(node).trim() === "") {
+      issues.push({ path: at, message: "Link needs text that says where it goes" });
+    }
+    issues.push(...accessibilityIssues(node.children ?? [], `${at}.children`));
+  });
+  return issues;
+}

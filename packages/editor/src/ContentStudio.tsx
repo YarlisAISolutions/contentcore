@@ -13,7 +13,7 @@ import {
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { RichTextEditor } from "./RichTextEditor";
 import { JsonField, SchemaForm } from "./SchemaForm";
-import { type JsonSchema, defaultValue, jsonSchemaOf, newId } from "./schema";
+import { type JsonSchema, accessibilityIssues, cleanNodes, defaultValue, jsonSchemaOf, newId } from "./schema";
 import { STUDIO_CSS } from "./styles";
 import { type DraftPage, useStudio } from "./useStudio";
 
@@ -49,20 +49,22 @@ export function ContentStudio({ store, blocks, onSaved, onDeleted, title = "Cont
   const { current, selected } = studio;
   const [filter, setFilter] = useState("");
 
-  // Ctrl/Cmd+S saves.
+  const blockIssues = useBlockIssues(current?.draft, blocks);
+  const issueCount = studio.pageIssues.length + [...blockIssues.values()].reduce((n, m) => n + m.length, 0);
+  const canSave = Boolean(current?.dirty) && issueCount === 0 && studio.status.kind !== "saving";
+
+  // Ctrl/Cmd+S saves, with the same rules as the Save button.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s" && selected) {
         e.preventDefault();
-        void studio.save(selected);
+        if (canSave) void studio.save(selected);
+        else if (issueCount > 0) studio.setStatus({ kind: "error", message: "Fix the highlighted problems before saving" });
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [selected, studio.save]);
-
-  const blockIssues = useBlockIssues(current?.draft, blocks);
-  const issueCount = studio.pageIssues.length + [...blockIssues.values()].reduce((n, m) => n + m.length, 0);
+  }, [selected, canSave, issueCount, studio.save, studio.setStatus]);
 
   const visible = studio.summaries.filter((s) =>
     `${s.title ?? ""} ${s.slug} ${s.locale ?? ""} ${s.id}`.toLowerCase().includes(filter.toLowerCase()),
@@ -99,7 +101,11 @@ export function ContentStudio({ store, blocks, onSaved, onDeleted, title = "Cont
                 <button type="button" className={p.id === selected ? "cc-page cc-page-active" : "cc-page"} aria-current={p.id === selected || undefined} onClick={() => void studio.open(p.id)}>
                   <span className="cc-page-title">
                     {p.title || p.id}
-                    {dirty && <span className="cc-dot" title="Unsaved changes" aria-label="unsaved" />}
+                    {dirty && (
+                      <span className="cc-dot" title="Unsaved changes">
+                        <span className="cc-sr-only">(unsaved changes)</span>
+                      </span>
+                    )}
                   </span>
                   <span className="cc-page-slug">
                     {p.slug}
@@ -133,7 +139,7 @@ export function ContentStudio({ store, blocks, onSaved, onDeleted, title = "Cont
               </div>
             )}
             <div className="cc-toolbar">
-              <button type="button" className="cc-primary" disabled={!current.dirty || issueCount > 0 || studio.status.kind === "saving"} onClick={() => void studio.save(current.draft.id)}>
+              <button type="button" className="cc-primary" disabled={!canSave} onClick={() => void studio.save(current.draft.id)}>
                 {current.base ? "Save" : "Create page"}
               </button>
               <button type="button" disabled={!current.dirty} onClick={() => void studio.reload(current.draft.id)}>
@@ -184,12 +190,12 @@ export function ContentStudio({ store, blocks, onSaved, onDeleted, title = "Cont
 function StaticControls({ store, onImported, onError }: { store: MemoryStore; onImported: () => void; onError: (message: string) => void }) {
   return (
     <>
-      <label className="cc-button">
+      <label className="cc-button cc-file">
         Import JSON
         <input
           type="file"
+          className="cc-sr-only"
           accept="application/json,.json"
-          hidden
           onChange={async (e) => {
             const file = e.target.files?.[0];
             e.target.value = "";
@@ -235,7 +241,7 @@ function PageFields({ draft, isNew, issues, onChange }: { draft: DraftPage; isNe
     <section className="cc-section" aria-label="Page settings">
       <h2>Page</h2>
       <div className="cc-grid">
-        <Text label="Title" value={draft.title ?? ""} onChange={(v) => set("title", v)} error={issue("title")} />
+        <Text label="Title" value={draft.title ?? ""} onChange={(v) => set("title", v)} error={issue("title")} autoFocus={isNew} />
         <Text label="Slug (URL path)" value={draft.slug} onChange={(v) => onChange({ ...draft, slug: v })} error={issue("slug")} placeholder="/about" />
         <Text label="Locale" value={draft.locale ?? ""} onChange={(v) => set("locale", v)} error={issue("locale")} placeholder="default" />
         <Text label="ID" value={draft.id} readOnly={!isNew} onChange={(v) => onChange({ ...draft, id: v })} error={issue("id")} hint={isNew ? "Permanent once created" : "Permanent"} />
@@ -261,7 +267,7 @@ function PageFields({ draft, isNew, issues, onChange }: { draft: DraftPage; isNe
   );
 }
 
-function Text(props: { label: string; value: string; onChange: (v: string) => void; error?: string; placeholder?: string; readOnly?: boolean; hint?: string; multiline?: boolean }) {
+function Text(props: { label: string; value: string; onChange: (v: string) => void; error?: string; placeholder?: string; readOnly?: boolean; hint?: string; multiline?: boolean; autoFocus?: boolean }) {
   const id = useMemo(() => newId("cc-field"), []);
   return (
     <div className="cc-field">
@@ -284,6 +290,9 @@ function Text(props: { label: string; value: string; onChange: (v: string) => vo
           onChange={(e) => props.onChange(e.target.value)}
           aria-invalid={Boolean(props.error) || undefined}
           aria-describedby={props.hint ? `${id}-hint` : undefined}
+          // Moving focus here after "+ New page" tells keyboard and screen-reader users where they are.
+          // biome-ignore lint/a11y/noAutofocus: deliberate focus management for a newly created page.
+          autoFocus={props.autoFocus}
         />
       )}
       {props.error && (
@@ -306,7 +315,10 @@ function useBlockIssues(draft: DraftPage | undefined, blocks: BlockRegistry) {
         const definition = Object.prototype.hasOwnProperty.call(blocks, block.type) ? blocks[block.type] : undefined;
         if (!definition) return [block.id, [{ path: "", message: `No block type "${block.type}" is registered` }]];
         const result = await validateBlockContent(definition.schema, block.content);
-        return [block.id, result.ok ? [] : result.issues];
+        const issues = result.ok ? [] : [...result.issues];
+        const nodes = (block.content as { nodes?: unknown } | null)?.nodes;
+        if (block.type === "html" && Array.isArray(nodes)) issues.push(...accessibilityIssues(nodes as HtmlNode[]));
+        return [block.id, issues];
       }),
     ).then((pairs) => live && setIssues(new Map(pairs)));
     return () => {
@@ -406,25 +418,40 @@ function BlockList({
 
 function BlockEditor({ block, schema, issues, onChange }: { block: DraftPage["blocks"][number]; schema?: JsonSchema; issues: ValidationIssue[]; onChange: (content: unknown) => void }) {
   const isHtml = block.type === "html" && typeof block.content === "object" && block.content !== null && Array.isArray((block.content as { nodes?: unknown }).nodes);
+  // Content the rich-text editor would change (embeds, inline styles, opted-in elements) opens in JSON.
+  const keepsAsRichText = useMemo(() => {
+    if (!isHtml) return true;
+    const nodes = (block.content as { nodes: HtmlNode[] }).nodes;
+    try {
+      return JSON.stringify(cleanNodes(nodes)) === JSON.stringify(nodes);
+    } catch {
+      return false;
+    }
+  }, [isHtml, block.content]);
   const canForm = Boolean(schema?.properties);
-  const [mode, setMode] = useState<"form" | "json">(isHtml || canForm ? "form" : "json");
+  const [mode, setMode] = useState<"form" | "json">((isHtml && keepsAsRichText) || (!isHtml && canForm) ? "form" : "json");
   const issueMap = useMemo(() => new Map(issues.map((i) => [i.path, i.message])), [issues]);
   const unplaced = issues.filter((i) => mode === "json" || !schema || (!issueMap.has(i.path) && i.path !== "")).length ? issues : [];
 
   return (
     <div className="cc-block-body">
       {(isHtml || canForm) && (
-        <div className="cc-tabs" role="tablist" aria-label={`${block.type} editor mode`}>
-          <button type="button" role="tab" aria-selected={mode === "form"} onClick={() => setMode("form")}>
+        <div className="cc-tabs" role="group" aria-label={`${block.type} block editor mode`}>
+          <button type="button" aria-pressed={mode === "form"} onClick={() => setMode("form")}>
             {isHtml ? "Rich text" : "Form"}
           </button>
-          <button type="button" role="tab" aria-selected={mode === "json"} onClick={() => setMode("json")}>
+          <button type="button" aria-pressed={mode === "json"} onClick={() => setMode("json")}>
             JSON
           </button>
         </div>
       )}
+      {isHtml && !keepsAsRichText && (
+        <p className="cc-hint" role="note">
+          This block has markup the rich-text editor would remove (embeds, inline styles or elements that need opting in). Edit it as JSON to keep it.
+        </p>
+      )}
       {mode === "json" ? (
-        <JsonField key={`${block.id}-json`} value={block.content} onChange={onChange} label="" path="" issues={new Map()} />
+        <JsonField key={`${block.id}-json`} value={block.content} onChange={onChange} label="" ariaLabel={`${block.type} block content (JSON)`} path="" issues={new Map()} />
       ) : isHtml ? (
         <RichTextEditor
           nodes={(block.content as { nodes: HtmlNode[] }).nodes}

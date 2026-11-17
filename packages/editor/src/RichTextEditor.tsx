@@ -42,6 +42,8 @@ export function RichTextEditor({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const lastEmitted = useRef<string>("");
+  /** The element's innerHTML right after we last wrote or read it: unchanged means no edit. */
+  const lastSeen = useRef<string>("");
 
   // Sync from outside (initial load, JSON edits, revert) without disturbing the caret while typing.
   useEffect(() => {
@@ -51,12 +53,14 @@ export function RichTextEditor({
     if (html !== lastEmitted.current) {
       el.innerHTML = html;
       lastEmitted.current = html;
+      lastSeen.current = el.innerHTML;
     }
   }, [nodes]);
 
   const emit = () => {
     const el = ref.current;
-    if (!el) return;
+    if (!el || el.innerHTML === lastSeen.current) return; // focus/blur without an edit changes nothing
+    lastSeen.current = el.innerHTML;
     const cleaned = cleanNodes(htmlToNodes(el.innerHTML));
     lastEmitted.current = toHtml(cleaned);
     onChange(cleaned);

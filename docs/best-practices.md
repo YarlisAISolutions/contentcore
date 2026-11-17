@@ -34,6 +34,11 @@ A checklist for production. Each item links to the details.
 - [ ] **Give every region sensible fallbacks.** Full pages show a not-found or error UI with retry; embedded sections render nothing.
 - [ ] **Use short timeouts at the edge** (`timeoutMs: 3000`, `retry: { retries: 1 }`).
 
+## Accessibility
+
+- [ ] **Follow the block-author checklist** in [accessibility](accessibility.md#what-block-authors-should-do): heading order, required `alt` fields in image schemas, link text, contrast, reduced motion, layouts that work at 320 px.
+- [ ] **Give fallbacks roles:** `aria-busy` for loading, `role="alert"` and a retry button for errors.
+
 ## Security
 
 - [ ] **Capabilities are UI hints only.** Every write endpoint checks permissions on the server.

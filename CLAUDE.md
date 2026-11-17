@@ -4,7 +4,11 @@ ContentCore: schema-driven content for React. A bun monorepo with two public npm
 
 - `packages/core`: `@contentcore/core`. No React and no runtime dependencies, so it must stay server-safe.
 - `packages/react`: `@contentcore/react`. Its build adds `"use client"`, and it re-exports core.
-- `examples/vite-app`: not a workspace. It consumes the packed tarballs in `scripts/verify-pack.ts`.
+- `examples/*`: not workspaces. Each one consumes the packed tarballs:
+  - `vite-app` runs in `verify-pack` and `verify-browsers`.
+  - `nextjs-app` runs in `verify-next`.
+  - `node-server` and `edge-worker` run in `verify-pack`.
+- `docs/`: the user guides. Update them in the same PR as any API change.
 
 Read `docs/ARCHITECTURE.md` before changing contracts.
 
@@ -12,7 +16,9 @@ Read `docs/ARCHITECTURE.md` before changing contracts.
 
 ```bash
 bun install
-bun run check      # build → typecheck → bun test → verify-pack (tarball contents, example build, Node ESM/CJS)
+bun run check            # build → typecheck → bun test → verify-pack (publint, attw, Node/Bun/Deno, edge VM)
+bun run verify:browsers  # Chromium/Firefox/WebKit via Playwright
+bun run verify:next      # Next.js build + start
 bun run bench
 ```
 
@@ -27,7 +33,7 @@ bun run bench
 ## Release
 
 1. Bump the version in both `packages/*/package.json`, plus core's range in react's dependencies. Update `CHANGELOG.md`.
-2. Run `bun run check`.
+2. Run `bun run verify:all`, and make sure every CI job is green.
 3. Publish core first, then react: `npm publish --access public` in each package directory.
    - The npm token is the contentcore org token (user `yarlis1410`).
    - Load it from Keep into the `NPM_TOKEN` env var with a temporary userconfig. Never commit an `.npmrc`.

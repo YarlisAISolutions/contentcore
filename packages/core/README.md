@@ -27,7 +27,15 @@ const source = createApiSource({ baseUrl: "https://example.com/api/content" });
 const page = await source.getPage("/pricing", { locale: "en" }); // PageDocument | null
 ```
 
-See the [@contentcore/react README](https://www.npmjs.com/package/@contentcore/react) for the full guide.
+See the [@contentcore/react README](https://www.npmjs.com/package/@contentcore/react) and the documentation below.
+
+## Documentation
+
+- [Getting started](https://github.com/YarlisAISolutions/contentcore/blob/main/docs/getting-started.md)
+- [Embedding in your app](https://github.com/YarlisAISolutions/contentcore/blob/main/docs/embedding.md): SPA, Next.js, React Router/Remix, Node/Bun/Deno, edge, Astro, React Native, and page patterns
+- [Content model](https://github.com/YarlisAISolutions/contentcore/blob/main/docs/content-model.md) · [Blocks](https://github.com/YarlisAISolutions/contentcore/blob/main/docs/blocks.md) · [Sources and caching](https://github.com/YarlisAISolutions/contentcore/blob/main/docs/sources-and-caching.md)
+- [Best practices](https://github.com/YarlisAISolutions/contentcore/blob/main/docs/best-practices.md) · [Platform support](https://github.com/YarlisAISolutions/contentcore/blob/main/docs/platform-support.md) · [API reference](https://github.com/YarlisAISolutions/contentcore/blob/main/docs/api-reference.md)
+- [Examples](https://github.com/YarlisAISolutions/contentcore/blob/main/examples/README.md): Vite feature tour, Next.js App Router, Node/Bun/Deno server, edge worker
 
 ## Licence
 

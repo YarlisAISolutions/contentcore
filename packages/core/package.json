@@ -1,6 +1,6 @@
 {
   "name": "@contentcore/core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Framework-agnostic ContentCore contracts: page documents, validation, schema migrations, static and API content sources.",
   "license": "MIT",
   "repository": {

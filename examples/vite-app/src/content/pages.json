@@ -1,0 +1,26 @@
+[
+  {
+    "id": "home",
+    "slug": "/",
+    "schemaVersion": 1,
+    "title": "Home",
+    "capabilities": ["page:edit"],
+    "blocks": [
+      {
+        "id": "welcome",
+        "type": "hero",
+        "content": { "heading": "Welcome", "description": "Explore our products" }
+      },
+      {
+        "id": "features",
+        "type": "featureList",
+        "content": {
+          "items": [
+            { "title": "Typed blocks", "body": "Each block has a schema; content is validated before it renders." },
+            { "title": "Any source", "body": "Static JSON today, your API or a CMS tomorrow, same components." }
+          ]
+        }
+      }
+    ]
+  }
+]

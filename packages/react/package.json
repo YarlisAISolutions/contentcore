@@ -1,0 +1,65 @@
+{
+  "name": "@contentcore/react",
+  "version": "0.1.0",
+  "description": "Render ContentCore pages in React: register schema-validated blocks, load pages from static JSON or your API, with loading, missing-page, unknown-block and error fallbacks.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YarlisAISolutions/contentcore.git",
+    "directory": "packages/react"
+  },
+  "homepage": "https://github.com/YarlisAISolutions/contentcore/tree/main/packages/react#readme",
+  "bugs": {
+    "url": "https://github.com/YarlisAISolutions/contentcore/issues"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "keywords": [
+    "cms",
+    "react",
+    "content",
+    "headless-cms",
+    "blocks",
+    "page-builder",
+    "zod",
+    "standard-schema",
+    "contentcore"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@contentcore/core": "^0.1.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.2.0"
+  }
+}

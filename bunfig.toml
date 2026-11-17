@@ -1,0 +1,3 @@
+[test]
+preload = ["./scripts/test-setup.ts"]
+root = "packages"

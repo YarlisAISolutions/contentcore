@@ -1,0 +1,33 @@
+{
+  "name": "contentcore",
+  "private": true,
+  "description": "ContentCore: schema-driven content for React apps. Monorepo for the @contentcore packages.",
+  "license": "MIT",
+  "packageManager": "bun@1.4.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "packages/core",
+    "packages/react"
+  ],
+  "scripts": {
+    "build": "bun run --filter @contentcore/core build && bun run --filter @contentcore/react build",
+    "typecheck": "bun run --filter '@contentcore/*' typecheck",
+    "test": "bun test",
+    "check": "bun run build && bun run typecheck && bun test && bun run verify:pack",
+    "verify:pack": "bun run scripts/verify-pack.ts",
+    "bench": "bun run scripts/bench.ts"
+  },
+  "devDependencies": {
+    "@happy-dom/global-registrator": "^21.0.4",
+    "@types/bun": "latest",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "zod": "^4.6.7"
+  }
+}
